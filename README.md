@@ -1,2 +1,2 @@
 # blueprint_android_app
-Hello World
+Hello World and Minneapolis!
