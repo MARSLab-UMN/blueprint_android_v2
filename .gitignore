@@ -1,7 +1,7 @@
 BlueprintAndroidApp/.gradle
-BlueprintAndroidApp//local.properties
-BlueprintAndroidApp//.idea/workspace.xml
-BlueprintAndroidApp//.idea/libraries
+BlueprintAndroidApp/local.properties
+BlueprintAndroidApp/.idea/workspace.xml
+BlueprintAndroidApp/.idea/libraries
 BlueprintAndroidApp/.DS_Store
-BlueprintAndroidApp//build
-BlueprintAndroidApp//captures
+BlueprintAndroidApp/build
+BlueprintAndroidApp/captures
