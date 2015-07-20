@@ -1,3 +1,4 @@
 # blueprint_android_app
-Hello 56 World
-something
+Hello 56 World and Minneapolis!
+something     
+
