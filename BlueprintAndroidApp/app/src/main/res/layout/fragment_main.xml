@@ -13,9 +13,19 @@
         android:text="@string/select_trajectory_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/select_traj_button"
+        android:id="@+id/select_traj_button0"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
+
+    <Button
+        android:text="@string/select_trajectory_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/select_traj_button"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+     />
+
 
 </RelativeLayout>
