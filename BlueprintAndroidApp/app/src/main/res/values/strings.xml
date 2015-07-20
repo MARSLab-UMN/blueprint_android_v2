@@ -6,5 +6,7 @@
     <string name="select_blueprint_button">Select Blueprint</string>
 
     <!--Settings Menu-->
+    <string name="action_load_alignment">Load Alignment Data</string>
+    <string name="action_save_alignment">Save Alignment Data</string>
     <string name="action_settings">Settings</string>
 </resources>
