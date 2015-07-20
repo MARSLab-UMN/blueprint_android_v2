@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">BlueprintAndroidApp</string>
-    <string name="hello_world">Hello world and maybe Minneapolis and Minnesota!</string>
+
+    <!--UI Buttons-->
     <string name="select_trajectory_button">Select Trajectory</string>
+    <string name="select_blueprint_button">Select Blueprint</string>
+
+    <!--Settings Menu-->
     <string name="action_settings">Settings</string>
 </resources>
