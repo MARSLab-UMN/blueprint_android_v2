@@ -6,6 +6,16 @@
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivityFragment">
 
     <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:id="@+id/hello_world_str" />
+
+    <Button
+        android:text="@string/select_trajectory_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/select_traj_button"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
