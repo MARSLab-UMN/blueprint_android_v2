@@ -148,8 +148,10 @@ public class MainActivity extends ActionBarActivity {
             };
             List<String> dirList = Arrays.asList(mPath.list(dirFilter));
             mFileList.addAll(dirList);
-            List<String> fileList = Arrays.asList(mPath.list(fileFilter));
-            mFileList.addAll(fileList);
+            if (mLoadType != LoadType.SAVE_ALIGNMENT) {
+                List<String> fileList = Arrays.asList(mPath.list(fileFilter));
+                mFileList.addAll(fileList);
+            }
         } else {
             mFileList.clear();
         }
