@@ -25,7 +25,8 @@ import java.util.ArrayList;
 public class MainActivity extends ActionBarActivity {
     //In an Activity
     static final private String LOG_TAG = "BlueprintAndroidApp";
-    private ArrayList<String> mFileList = new ArrayList<String>();;
+    private ArrayList<String> mFileList = new ArrayList<String>();
+    ;
     private String mChosenFile;
     private String mCurrentDir;
     private LoadType mLoadType;
@@ -35,7 +36,7 @@ public class MainActivity extends ActionBarActivity {
     private List<Float> traj_vertices;
 
     public enum LoadType {
-        BLUEPRINT, TRAJECTORY
+        BLUEPRINT, TRAJECTORY, LOAD_ALIGNMENT, SAVE_ALIGNMENT
     }
 
     @Override
@@ -114,6 +115,10 @@ public class MainActivity extends ActionBarActivity {
         PrintNotYetImplemented("readImageData");
     }
 
+    private void readAlignmentData() {
+        PrintNotYetImplemented("readAlignmentData");
+    }
+
     private void loadFileList(String baseFolderPath) {
         File mPath = new File(baseFolderPath);
 
@@ -148,6 +153,7 @@ public class MainActivity extends ActionBarActivity {
         } else {
             mFileList.clear();
         }
+        mFileList.add("MOVE UP ONE DIRECTORY LEVEL");
     }
 
     private boolean FileIsImage() {
@@ -178,48 +184,88 @@ public class MainActivity extends ActionBarActivity {
             return dialog;
         }
         builder.setItems(mFileList.toArray(new String[mFileList.size()]),
-                        new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                mChosenFile = mFileList.get((which));
-                Log.i(LOG_TAG, "Selected: " + mChosenFile);
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == mFileList.size()-1 && true) {
+                            File file = new File(mCurrentDir + mChosenFile);
+                            String parent_folder = file.getParentFile().getName() + "/";
+                            String up_a_level = mCurrentDir.substring(0, mCurrentDir.length() - parent_folder.length());
+                            String top_level = Environment.getExternalStorageDirectory().toString();
+                            if (!top_level.endsWith("/")) {
+                                top_level += "/";
+                            }
+                            if (mCurrentDir.equals(top_level)) {
+                                Log.e(LOG_TAG, "Already at top directory");
+                                Context context = getApplicationContext();
+                                CharSequence text = "Invalid file selection. Already at top level directory.";
+                                int duration = Toast.LENGTH_SHORT;
 
-                if (FileIsImage() && mLoadType == LoadType.BLUEPRINT) {
-                    Log.i(LOG_TAG, "You have selected an image.");
-                    readImageData();
-                } else if (FileIsData() && mLoadType == LoadType.TRAJECTORY) {
-                    Log.i(LOG_TAG, "You have selected a data file.");
-                    readTrajData();
-                } else if (FileIsDir()) {
-                    Log.i(LOG_TAG, "Selected a directory");
-                    dialog.dismiss();
-                    createFileSelectorDialog(mCurrentDir + mChosenFile + "/", mLoadType);
-                } else {
-                    Context context = getApplicationContext();
-                    CharSequence text = "Invalid file selection. Select another.";
-                    int duration = Toast.LENGTH_SHORT;
+                                Toast toast = Toast.makeText(context, text, duration);
+                                toast.show();
+                                createFileSelectorDialog(mCurrentDir, mLoadType);
+                            } else {
+                                createFileSelectorDialog(up_a_level, mLoadType);
+                            }
+                        } else {
+                            mChosenFile = mFileList.get(which);
+                            Log.i(LOG_TAG, "Selected: " + mChosenFile);
 
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
-                    createFileSelectorDialog(mCurrentDir, mLoadType);
-                }
-            }
-        });
+                            if (FileIsImage() && mLoadType == LoadType.BLUEPRINT) {
+                                Log.i(LOG_TAG, "You have selected an image.");
+                                readImageData();
+                            } else if (FileIsData() && mLoadType == LoadType.TRAJECTORY) {
+                                Log.i(LOG_TAG, "You have selected a trajectory data file.");
+                                readTrajData();
+                            } else if (FileIsData() && mLoadType == LoadType.LOAD_ALIGNMENT) {
+                                readAlignmentData();
+                            } else if (mLoadType == LoadType.SAVE_ALIGNMENT) {
+                                PrintNotYetImplemented("SaveAlignment");
+                            } else if (FileIsDir()) {
+                                Log.i(LOG_TAG, "Selected a directory");
+                                dialog.dismiss();
+                                createFileSelectorDialog(mCurrentDir + mChosenFile + "/", mLoadType);
+                            } else {
+                                Context context = getApplicationContext();
+                                CharSequence text = "Invalid file selection. Select another.";
+                                int duration = Toast.LENGTH_SHORT;
+
+                                Toast toast = Toast.makeText(context, text, duration);
+                                toast.show();
+                                createFileSelectorDialog(mCurrentDir, mLoadType);
+                            }
+                        }
+                    }
+                });
 
         dialog = builder.show();
-        if (mLoadType == LoadType.BLUEPRINT) {
-            dialog.setTitle("Select a blueprint file");
-        } else if (mLoadType == LoadType.TRAJECTORY) {
-            dialog.setTitle("Select a trajectory data file");
+        switch (mLoadType) {
+            case BLUEPRINT:
+                dialog.setTitle("Select a blueprint file");
+                break;
+            case TRAJECTORY:
+                dialog.setTitle("Select a trajectory data file");
+                break;
+            case LOAD_ALIGNMENT:
+                dialog.setTitle("Select an alignment data file");
+                break;
+            case SAVE_ALIGNMENT:
+                dialog.setTitle("Select location to save alignment file");
+                break;
+            default:
+                dialog.setTitle("Command not implemented");
+                break;
         }
         return dialog;
     }
 
     public void LoadAlignment() {
-        PrintNotYetImplemented("LoadAlignment");
+        Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.LOAD_ALIGNMENT);
+        dialog.show();
     }
 
     public void SaveAlignment() {
-        PrintNotYetImplemented("SaveAlignment");
+        Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.SAVE_ALIGNMENT);
+        dialog.show();
     }
 
     public void SelectTrajectory(View view) {
