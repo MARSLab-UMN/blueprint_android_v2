@@ -33,6 +33,7 @@ public class MainActivity extends ActionBarActivity {
     private static final String FTYPE = ".txt";
     private static final String PNGTYPE = ".png";
     private static final String JPGTYPE = ".jpg";
+    private static final String JPEGTYPE = ".jpeg";
     private List<Float> traj_vertices;
 
     public enum LoadType {
@@ -159,7 +160,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private boolean FileIsImage() {
-        return mChosenFile.contains(PNGTYPE) || mChosenFile.contains(JPGTYPE);
+        return mChosenFile.contains(PNGTYPE) || mChosenFile.contains(JPGTYPE) || mChosenFile.contains(JPEGTYPE);
     }
 
     private boolean FileIsDir() {
