@@ -18,7 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.InputStreamReader;
-
+import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
     //In an Activity
@@ -26,6 +26,9 @@ public class MainActivity extends ActionBarActivity {
     private String[] mFileList;
     private String mChosenFile;
     private static final String FTYPE = ".txt";
+    private static final String PNGTYPE = ".png";
+    private static final String JPGTYPE = ".jpg";
+    private List<Float> traj_vertices;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +92,8 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public boolean accept(File dir, String filename) {
                     File sel = new File(dir, filename);
-                    return filename.contains(FTYPE) || sel.isDirectory();
+//                    return filename.contains(FTYPE) || sel.isDirectory();
+                    return true;
                 }
 
             };
@@ -99,6 +103,15 @@ public class MainActivity extends ActionBarActivity {
             mFileList= new String[0];
         }
     }
+
+    private boolean FileIsImage() {
+        return mChosenFile.contains(PNGTYPE) || mChosenFile.contains(JPGTYPE);
+    }
+
+    private boolean FileIsData() {
+        return true;
+    }
+
     protected Dialog createFileSelectorDialog() {
         loadFileList(Environment.getExternalStorageDirectory() + "/");
         Dialog dialog = null;
@@ -114,6 +127,12 @@ public class MainActivity extends ActionBarActivity {
             public void onClick(DialogInterface dialog, int which) {
                 mChosenFile = mFileList[which];
                 Log.i(LOG_TAG, "Selected: " + mChosenFile);
+
+                if (FileIsImage()) {
+                    Log.i(LOG_TAG, "You have selected an image.");
+                } else if (FileIsData()) {
+                    Log.i(LOG_TAG, "You have selected a data file.");
+                }
             }
         });
 
@@ -135,7 +154,7 @@ public class MainActivity extends ActionBarActivity {
 
         // write on SD card file data in the text box
         try {
-            File myFile = new File("/sdcard/test.txt");
+            File myFile = new File("/sdcard/" + mChosenFile);
             FileInputStream fIn = new FileInputStream(myFile);
             BufferedReader myReader = new BufferedReader(
                     new InputStreamReader(fIn));
@@ -146,7 +165,7 @@ public class MainActivity extends ActionBarActivity {
             }
             myReader.close();
             Toast.makeText(getBaseContext(),
-                    "Done reading SD 'test.txt'",
+                    "Done reading " + mChosenFile,
                     Toast.LENGTH_SHORT).show();
             Toast.makeText(getBaseContext(),
                     aBuffer,
