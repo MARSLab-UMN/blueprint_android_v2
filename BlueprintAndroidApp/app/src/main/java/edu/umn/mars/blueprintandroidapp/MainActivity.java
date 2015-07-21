@@ -9,6 +9,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+
 
 public class MainActivity extends ActionBarActivity {
 
@@ -69,6 +74,29 @@ public class MainActivity extends ActionBarActivity {
 
     public void SelectTrajectory(View view) {
         PrintNotYetImplemented("SelectTrajectory");
+
+        // write on SD card file data in the text box
+        try {
+            File myFile = new File("/sdcard/test.txt");
+            FileInputStream fIn = new FileInputStream(myFile);
+            BufferedReader myReader = new BufferedReader(
+                    new InputStreamReader(fIn));
+            String aDataRow = "";
+            String aBuffer = "";
+            while ((aDataRow = myReader.readLine()) != null) {
+                aBuffer += aDataRow + "\n";
+            }
+            myReader.close();
+            Toast.makeText(getBaseContext(),
+                    "Done reading SD 'test.txt'",
+                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(),
+                    aBuffer,
+                    Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void SelectBlueprint(View view) {
