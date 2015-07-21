@@ -28,6 +28,8 @@ import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
     //In an Activity
+    static public List<Double> traj_vertices = new ArrayList<Double>();
+
     static final private String LOG_TAG = "BlueprintAndroidApp";
     private ArrayList<String> mFileList = new ArrayList<String>();
     static final int state_vec_size = 16;
@@ -38,7 +40,6 @@ public class MainActivity extends ActionBarActivity {
     private static final String PNGTYPE = ".png";
     private static final String JPGTYPE = ".jpg";
     private static final String JPEGTYPE = ".jpeg";
-    private List<Double> traj_vertices;
 
     // Views
     DrawView drawView;
@@ -52,8 +53,8 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         drawView = new DrawView(this);
         drawView.setBackgroundColor(Color.WHITE);
-        setContentView(drawView);
-//        setContentView(R.layout.activity_main);
+//        setContentView(drawView);
+        setContentView(R.layout.activity_main);
     }
 
 
@@ -98,7 +99,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void readTrajData() {
-        traj_vertices = new ArrayList<Double>();
         traj_vertices.clear();
         // write on SD card file data in the text box
         try {
@@ -129,7 +129,8 @@ public class MainActivity extends ActionBarActivity {
             return;
         }
 
-
+        drawView.invalidate();
+        drawView.requestLayout();
     }
 
     private void readImageData() {
