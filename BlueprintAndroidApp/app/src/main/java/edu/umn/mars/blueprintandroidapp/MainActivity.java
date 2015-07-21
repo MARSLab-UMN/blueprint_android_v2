@@ -143,7 +143,7 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public boolean accept(File dir, String filename) {
                     File sel = new File(dir, filename);
-                    return !sel.isDirectory();
+                    return sel.isFile();
                 }
 
             };
@@ -160,7 +160,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private boolean FileIsImage() {
-        return mChosenFile.contains(PNGTYPE) || mChosenFile.contains(JPGTYPE) || mChosenFile.contains(JPEGTYPE);
+        return mChosenFile.toLowerCase().contains(PNGTYPE) || mChosenFile.toLowerCase().contains(JPGTYPE) || mChosenFile.toLowerCase().contains(JPEGTYPE);
     }
 
     private boolean FileIsDir() {
@@ -176,7 +176,7 @@ public class MainActivity extends ActionBarActivity {
         mCurrentDir = baseFolderPath;
         mLoadType = loadType;
         mFileList.clear();
-        loadFileList(mCurrentDir);
+        loadFileList(mCurrentDir); // populates mFileList
         Dialog dialog = null;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
