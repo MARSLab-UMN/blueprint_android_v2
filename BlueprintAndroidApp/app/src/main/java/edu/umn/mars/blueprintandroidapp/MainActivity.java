@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.nfc.Tag;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
@@ -39,6 +40,9 @@ public class MainActivity extends ActionBarActivity {
     private static final String JPEGTYPE = ".jpeg";
     private List<Double> traj_vertices;
 
+    // Views
+    DrawView drawView;
+
     public enum LoadType {
         BLUEPRINT, TRAJECTORY, LOAD_ALIGNMENT, SAVE_ALIGNMENT
     }
@@ -46,7 +50,10 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        drawView = new DrawView(this);
+        drawView.setBackgroundColor(Color.WHITE);
+        setContentView(drawView);
+//        setContentView(R.layout.activity_main);
     }
 
 
@@ -112,6 +119,17 @@ public class MainActivity extends ActionBarActivity {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void displayTrajData() {
+        PrintNotYetImplemented("displayTrajData");
+
+        if (traj_vertices.isEmpty()) {
+            Log.e(LOG_TAG, "No vertices loaded");
+            return;
+        }
+
+
     }
 
     private void readImageData() {
@@ -221,6 +239,7 @@ public class MainActivity extends ActionBarActivity {
                             } else if (FileIsData() && mLoadType == LoadType.TRAJECTORY) {
                                 Log.i(LOG_TAG, "You have selected a trajectory data file.");
                                 readTrajData();
+                                displayTrajData();
                             } else if (FileIsData() && mLoadType == LoadType.LOAD_ALIGNMENT) {
                                 readAlignmentData();
                             } else if (mLoadType == LoadType.SAVE_ALIGNMENT) {
