@@ -44,6 +44,9 @@ public class MainActivity extends ActionBarActivity {
     // Views
     DrawView drawView;
 
+    // Alignment parameters
+    static float TrajScale = 100.0f;
+
     public enum LoadType {
         BLUEPRINT, TRAJECTORY, LOAD_ALIGNMENT, SAVE_ALIGNMENT
     }
@@ -51,10 +54,8 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        drawView = new DrawView(this);
-        drawView.setBackgroundColor(Color.WHITE);
-//        setContentView(drawView);
         setContentView(R.layout.activity_main);
+        drawView = (DrawView) findViewById(R.id.draw_view);
     }
 
 
