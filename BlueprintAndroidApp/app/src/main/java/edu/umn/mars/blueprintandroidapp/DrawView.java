@@ -52,8 +52,9 @@ public class DrawView extends View {
             x *= MainActivity.TrajScale;
             y *= MainActivity.TrajScale;
 
-            x = Math.cos(MainActivity.TrajRot) * x - Math.sin(MainActivity.TrajRot) * y;
+            double temp = Math.cos(MainActivity.TrajRot) * x - Math.sin(MainActivity.TrajRot) * y;
             y = Math.sin(MainActivity.TrajRot) * x + Math.cos(MainActivity.TrajRot) * y;
+            x = temp;
 
             x += MainActivity.TrajPosX;
             y += MainActivity.TrajPosY;

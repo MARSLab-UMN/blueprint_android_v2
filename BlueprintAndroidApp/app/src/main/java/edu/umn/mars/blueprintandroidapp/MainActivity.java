@@ -491,7 +491,7 @@ public class MainActivity extends ActionBarActivity {
                                 readAlignmentData();
                             } else if (mLoadType == LoadType.SAVE_ALIGNMENT && which == 0) {
                                     // selected to save the file in this directory
-                                
+
                             } else if (FileIsDir()) {
                                 Log.i(DEBUG_TAG, "Selected a directory");
                                 dialog.dismiss();
