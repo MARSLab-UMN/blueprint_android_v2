@@ -56,14 +56,14 @@ public class MainActivity extends ActionBarActivity {
     ImageView blueprintImageView;
 
     // Alignment parameters and variables
-    static final float InitialTrajScale = 100.0f;
     static final float InitialTrajPosX = 0;
     static final float InitialTrajPosY = 0;
     static final float InitialTrajRot = 0;
-    static float TrajScale = InitialTrajScale;
+    static final float InitialTrajScale = 100.0f;
     static float TrajPosX = InitialTrajPosX;
     static float TrajPosY = InitialTrajPosY;
     static float TrajRot = InitialTrajRot;
+    static float TrajScale = InitialTrajScale;
     private int mActivePointerId = MotionEvent.INVALID_POINTER_ID;
     ScaleGestureDetector scaleDetector;
     private float mLastRot, mLastTouchX, mLastTouchY;
@@ -88,36 +88,36 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.menu_main, menu);
+//        return true;
+//    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        switch (id) {
-            case R.id.action_settings:
-                PrintNotYetImplemented("SelectSettings");
-                return true;
-            case R.id.action_load_alignment:
-                LoadAlignment();
-                return true;
-            case R.id.action_save_alignment:
-                SaveAlignment();
-                return true;
-            default:
-                break;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle action bar item clicks here. The action bar will
+//        // automatically handle clicks on the Home/Up button, so long
+//        // as you specify a parent activity in AndroidManifest.xml.
+//        int id = item.getItemId();
+//
+//        switch (id) {
+//            case R.id.action_settings:
+//                PrintNotYetImplemented("SelectSettings");
+//                return true;
+//            case R.id.action_load_alignment:
+//                LoadAlignment();
+//                return true;
+//            case R.id.action_save_alignment:
+//                SaveAlignment();
+//                return true;
+//            default:
+//                break;
+//        }
+//
+//        return super.onOptionsItemSelected(item);
+//    }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
@@ -149,7 +149,7 @@ public class MainActivity extends ActionBarActivity {
                 result = super.onTouchEvent(event);
         }
 
-        Log.i(DEBUG_TAG, "Change in X: " + TrajPosX + " Y: " + TrajPosY + " Rot: " + TrajRot + " Scale: " + TrajScale);
+//        Log.i(DEBUG_TAG, "Change in X: " + TrajPosX + " Y: " + TrajPosY + " Rot: " + TrajRot + " Scale: " + TrajScale);
 
         return result;
     }
@@ -320,7 +320,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void readTrajData() {
         traj_vertices.clear();
-        // write on SD card file data in the text box
+
         try {
             File myFile = new File(mCurrentDir + mChosenFile);
             Scanner scan = new Scanner(myFile);
@@ -367,7 +367,22 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void readAlignmentData() {
-        PrintNotYetImplemented("readAlignmentData");
+        try {
+            File myFile = new File(mCurrentDir + mChosenFile);
+            Scanner scan = new Scanner(myFile);
+
+            TrajPosX = scan.nextFloat();
+            TrajPosY = scan.nextFloat();
+            TrajRot = scan.nextFloat();
+            TrajScale = scan.nextFloat();
+
+            drawView.invalidate();
+            drawView.requestLayout();
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadFileList(String baseFolderPath) {
@@ -512,12 +527,12 @@ public class MainActivity extends ActionBarActivity {
         return dialog;
     }
 
-    public void LoadAlignment() {
+    public void LoadAlignment(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.LOAD_ALIGNMENT);
         dialog.show();
     }
 
-    public void SaveAlignment() {
+    public void SaveAlignment(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.SAVE_ALIGNMENT);
         dialog.show();
     }
