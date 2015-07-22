@@ -360,6 +360,7 @@ public class MainActivity extends ActionBarActivity {
         ResetAlignmentData();
     }
 
+
     private void readImageData() {
         String imageInSD = mCurrentDir + mChosenFile;
         Bitmap bitmap = BitmapFactory.decodeFile(imageInSD);
@@ -372,6 +373,30 @@ public class MainActivity extends ActionBarActivity {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
         }
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeFile(imageInSD, options);
+        int bwidth = options.outWidth;
+        int bheight = options.outHeight;
+
+         int actualHeight, actualWidth;
+         int imageViewHeight = blueprintImageView.getHeight(), imageViewWidth = blueprintImageView.getWidth();
+         int bitmapHeight =bheight, bitmapWidth = bwidth;
+        if (imageViewHeight * bitmapWidth <= imageViewWidth * bitmapHeight) {
+            actualWidth = bitmapWidth * imageViewHeight / bitmapHeight;
+            actualHeight = imageViewHeight;
+        } else {
+            actualHeight = bitmapHeight * imageViewWidth / bitmapWidth;
+            actualWidth = imageViewWidth;
+        }
+
+        Log.i(DEBUG_TAG,"It works !");
+
+        Log.i(DEBUG_TAG,"Bw = "+bwidth+"|Iw = "+imageViewWidth+"|Aw = "+actualWidth);
+
+
     }
 
     private void readAlignmentData() {
