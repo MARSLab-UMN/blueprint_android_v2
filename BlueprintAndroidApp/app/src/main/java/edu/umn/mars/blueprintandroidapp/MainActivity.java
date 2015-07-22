@@ -4,8 +4,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
+import android.graphics.Color;
+import android.nfc.Tag;
+
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -19,24 +24,34 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
     //In an Activity
+    static public List<Double> traj_vertices = new ArrayList<Double>();
+
     static final private String LOG_TAG = "BlueprintAndroidApp";
     private ArrayList<String> mFileList = new ArrayList<String>();
-    ;
+    static final int state_vec_size = 16;
     private String mChosenFile;
     private String mCurrentDir;
     private LoadType mLoadType;
     private static final String FTYPE = ".txt";
     private static final String PNGTYPE = ".png";
     private static final String JPGTYPE = ".jpg";
-    private List<Float> traj_vertices;
+    private static final String JPEGTYPE = ".jpeg";
+
+    // Views
+    DrawView drawView;
+
+    // Alignment parameters
+    static float TrajScale = 100.0f;
 
     public enum LoadType {
         BLUEPRINT, TRAJECTORY, LOAD_ALIGNMENT, SAVE_ALIGNMENT
@@ -46,6 +61,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        drawView = (DrawView) findViewById(R.id.draw_view);
     }
 
 
@@ -90,28 +106,38 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void readTrajData() {
+        traj_vertices.clear();
         // write on SD card file data in the text box
         try {
             File myFile = new File(mCurrentDir + mChosenFile);
-            FileInputStream fIn = new FileInputStream(myFile);
-            BufferedReader myReader = new BufferedReader(
-                    new InputStreamReader(fIn));
-            String aDataRow = "";
-            String aBuffer = "";
-            while ((aDataRow = myReader.readLine()) != null) {
-                aBuffer += aDataRow + "\n";
+            Scanner scan = new Scanner(myFile);
+
+            int count = 0;
+            while(scan.hasNextDouble())
+            {
+                if (count % state_vec_size == 13 || count % state_vec_size == 14 || count % state_vec_size == 15) {
+                    traj_vertices.add(scan.nextDouble());
+                } else {
+                    scan.nextDouble();
+                }
+                count++;
             }
-            myReader.close();
-            Toast.makeText(getBaseContext(),
-                    "Done reading " + mChosenFile,
-                    Toast.LENGTH_SHORT).show();
-            Toast.makeText(getBaseContext(),
-                    aBuffer,
-                    Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void displayTrajData() {
+        PrintNotYetImplemented("displayTrajData");
+
+        if (traj_vertices.isEmpty()) {
+            Log.e(LOG_TAG, "No vertices loaded");
+            return;
+        }
+
+        drawView.invalidate();
+        drawView.requestLayout();
     }
 
     private void readImageData() {
@@ -176,7 +202,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private boolean FileIsImage() {
-        return mChosenFile.toLowerCase().contains(PNGTYPE) || mChosenFile.toLowerCase().contains(JPGTYPE);
+        return mChosenFile.toLowerCase().contains(PNGTYPE) || mChosenFile.toLowerCase().contains(JPGTYPE) || mChosenFile.toLowerCase().contains(JPEGTYPE);
     }
 
     private boolean FileIsDir() {
@@ -235,6 +261,7 @@ public class MainActivity extends ActionBarActivity {
                             } else if (FileIsData() && mLoadType == LoadType.TRAJECTORY) {
                                 Log.i(LOG_TAG, "You have selected a trajectory data file.");
                                 readTrajData();
+                                displayTrajData();
                             } else if (FileIsData() && mLoadType == LoadType.LOAD_ALIGNMENT) {
                                 readAlignmentData();
                             } else if (mLoadType == LoadType.SAVE_ALIGNMENT) {
