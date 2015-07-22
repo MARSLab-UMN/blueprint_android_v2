@@ -7,6 +7,10 @@
     <string name="reset_alignment">Reset Alignment</string>
     <string name="select_trajectory_button">Load Trajectory</string>
     <string name="select_blueprint_button">Load Blueprint</string>
+    <string name="lock_x">Lock the X direction</string>
+    <string name="lock_y">Lock the Y direction</string>
+    <string name="lock_rotation">Lock rotation</string>
+    <string name="lock_scale">Lock scaling</string>
 
     <!--Settings Menu-->
     <string name="load_alignment_button">Load Alignment</string>

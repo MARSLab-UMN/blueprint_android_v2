@@ -22,6 +22,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -64,6 +65,10 @@ public class MainActivity extends ActionBarActivity {
     // Views
     DrawView drawView;
     ImageView blueprintImageView;
+    static public CheckBox lockXCheckBox;
+    static public CheckBox lockYCheckBox;
+    static public CheckBox lockRotationCheckBox;
+    static public CheckBox lockScaleCheckBox;
     static public TextView measurementTextView;
 
     // Alignment parameters and variables
@@ -94,6 +99,10 @@ public class MainActivity extends ActionBarActivity {
         context = getApplicationContext();
         setContentView(R.layout.activity_main);
         measurementTextView = (TextView) findViewById(R.id.current_alignment_measurements);
+        lockXCheckBox = (CheckBox) findViewById(R.id.lock_x);
+        lockYCheckBox = (CheckBox) findViewById(R.id.lock_y);
+        lockRotationCheckBox = (CheckBox) findViewById(R.id.lock_rotation);
+        lockScaleCheckBox = (CheckBox) findViewById(R.id.lock_scale);
         drawView = (DrawView) findViewById(R.id.draw_view);
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
         blueprintImageView.setScaleType(mScaleType);
@@ -135,6 +144,10 @@ public class MainActivity extends ActionBarActivity {
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
+            if (lockScaleCheckBox.isChecked()) {
+                return true;
+            }
+
             MainActivity.TrajScale *= detector.getScaleFactor();
             MainActivity.TrajScale = Math.max(0.1f, MainActivity.TrajScale);
 
@@ -214,8 +227,12 @@ public class MainActivity extends ActionBarActivity {
                 final float dx = x - mLastTouchX;
                 final float dy = y - mLastTouchY;
 
-                TrajPosX += dx;
-                TrajPosY += dy;
+                if (!lockXCheckBox.isChecked()) {
+                    TrajPosX += dx;
+                }
+                if (!lockYCheckBox.isChecked()) {
+                    TrajPosY += dy;
+                }
 
                 drawView.invalidate();
 
@@ -286,17 +303,21 @@ public class MainActivity extends ActionBarActivity {
                 // Calculate the distance moved
                 final float dx = x - mLastRot;
 
-                TrajRot += (dx / 2f) * (Math.PI / 180f);
+                if (!lockRotationCheckBox.isChecked()) {
 
-                if (TrajRot >= 2 * Math.PI) {
-                    TrajRot -= 2 * Math.PI;
-                }
+                    TrajRot += (dx / 2f) * (Math.PI / 180f);
 
-                if (TrajRot < 0) {
-                    TrajRot += 2 * Math.PI;
+                    if (TrajRot >= 2 * Math.PI) {
+                        TrajRot -= 2 * Math.PI;
+                    }
+
+                    if (TrajRot < 0) {
+                        TrajRot += 2 * Math.PI;
+                    }
                 }
 
                 drawView.invalidate();
+                drawView.requestLayout();
 
                 // Remember this touch position for the next move event
                 mLastRot = x;
