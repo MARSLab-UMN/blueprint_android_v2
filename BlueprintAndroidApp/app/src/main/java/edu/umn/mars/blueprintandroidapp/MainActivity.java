@@ -7,11 +7,14 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.nfc.Tag;
 import android.os.Environment;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Toast;
 
@@ -30,7 +33,8 @@ public class MainActivity extends ActionBarActivity {
     //In an Activity
     static public List<Double> traj_vertices = new ArrayList<Double>();
 
-    static final private String LOG_TAG = "BlueprintAndroidApp";
+    static final private String DEBUG_TAG = "BlueprintAndroidApp";
+    private static Context context;
     private ArrayList<String> mFileList = new ArrayList<String>();
     static final int state_vec_size = 16;
     private String mChosenFile;
@@ -44,11 +48,26 @@ public class MainActivity extends ActionBarActivity {
     // Views
     DrawView drawView;
 
-    // Alignment parameters
-    static float TrajScale = 100.0f;
+    // Alignment parameters and variables
+    static final float InitialTrajScale = 100.0f;
+    static final float InitialTrajPosX = 0;
+    static final float InitialTrajPosY = 0;
+    static final float InitialTrajRot = 0;
+    static float TrajScale = InitialTrajScale;
+    static float TrajPosX = InitialTrajPosX;
+    static float TrajPosY = InitialTrajPosY;
+    static float TrajRot = InitialTrajRot;
+    private int mActivePointerId = MotionEvent.INVALID_POINTER_ID;
+    ScaleGestureDetector scaleDetector;
+    private float mLastRot, mLastTouchX, mLastTouchY;
+
 
     public enum LoadType {
         BLUEPRINT, TRAJECTORY, LOAD_ALIGNMENT, SAVE_ALIGNMENT
+    }
+
+    public static Context getAppContext() {
+        return MainActivity.context;
     }
 
     @Override
@@ -56,6 +75,8 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         drawView = (DrawView) findViewById(R.id.draw_view);
+        MainActivity.context = getApplicationContext();
+        scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
     }
 
 
@@ -88,6 +109,193 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            MainActivity.TrajScale *= detector.getScaleFactor();
+            MainActivity.TrajScale = Math.max(0.1f, MainActivity.TrajScale);
+
+            drawView.invalidate();
+            drawView.requestLayout();
+
+            return true;
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean result = false;
+
+        int num_pointers = event.getPointerCount();
+
+        switch (num_pointers) {
+            case 1:
+                result = handleOnePointer(event);
+                break;
+            case 2:
+                result = handleTwoPointers(event);
+                break;
+            default:
+                result = super.onTouchEvent(event);
+        }
+
+        Log.i(DEBUG_TAG, "Change in X: " + TrajPosX + " Y: " + TrajPosY + " Rot: " + TrajRot + " Scale: " + TrajScale);
+
+        return result;
+    }
+
+    private boolean handleTwoPointers(MotionEvent event) {
+        boolean result = false;
+
+        result |= scaleDetector.onTouchEvent(event);
+
+        final int action = MotionEventCompat.getActionMasked(event);
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN: {
+                // really, should not hit this, because there are two pointers
+                result = true;
+                break;
+            }
+
+            case MotionEvent.ACTION_POINTER_DOWN: {
+//                final int pointerIndex = MotionEventCompat.getActionIndex(event);
+                final float x0 = MotionEventCompat.getX(event, 0);
+                final float y0 = MotionEventCompat.getY(event, 0);
+                final float x1 = MotionEventCompat.getX(event, 1);
+                final float y1 = MotionEventCompat.getY(event, 1);
+                final float x = (x1+x0)/2;
+                final float y = (y1+y0)/2;
+
+                // Remember where we started (for dragging)
+                mLastTouchX = x;
+                mLastTouchY = y;
+                // Save the ID of this pointer (for dragging)
+                mActivePointerId = MotionEventCompat.getPointerId(event, 0);
+                result = true;
+                break;
+            }
+
+
+            case MotionEvent.ACTION_MOVE: {
+                // Find the index of the active pointer and fetch its position
+//                final int pointerIndex =
+//                        MotionEventCompat.findPointerIndex(event, mActivePointerId);
+
+                final float x0 = MotionEventCompat.getX(event, 0);
+                final float y0 = MotionEventCompat.getY(event, 0);
+                final float x1 = MotionEventCompat.getX(event, 1);
+                final float y1 = MotionEventCompat.getY(event, 1);
+                final float x = (x1+x0)/2;
+                final float y = (y1+y0)/2;
+
+                // Calculate the distance moved
+                final float dx = x - mLastTouchX;
+                final float dy = y - mLastTouchY;
+
+                TrajPosX += dx;
+                TrajPosY += dy;
+
+                drawView.invalidate();
+
+                // Remember this touch position for the next move event
+                mLastTouchX = x;
+                mLastTouchY = y;
+                result = true;
+
+                break;
+            }
+
+            case MotionEvent.ACTION_UP: {
+                mActivePointerId = MotionEvent.INVALID_POINTER_ID;
+                Log.i(DEBUG_TAG, "Normal up");
+                result = true;
+                break;
+            }
+
+            case MotionEvent.ACTION_CANCEL: {
+                mActivePointerId = MotionEvent.INVALID_POINTER_ID;
+                result = true;
+                break;
+            }
+
+            case MotionEvent.ACTION_POINTER_UP: {
+
+                final int pointerIndex = MotionEventCompat.getActionIndex(event);
+                final int pointerId = MotionEventCompat.getPointerId(event, pointerIndex);
+
+                Log.e(DEBUG_TAG, "Up with " + pointerId + " and index is " + pointerIndex + " and mActive is " + mActivePointerId);
+//                if (pointerId == mActivePointerId) {
+//                    // This was our active pointer going up. Choose a new
+//                    // active pointer and adjust accordingly.
+                    final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
+                    mLastRot = MotionEventCompat.getX(event, newPointerIndex);
+                    mActivePointerId = MotionEventCompat.getPointerId(event, newPointerIndex);
+//                }
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private boolean handleOnePointer(MotionEvent event) {
+        boolean result = false;
+
+        final int action = MotionEventCompat.getActionMasked(event);
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN: {
+                final int pointerIndex = MotionEventCompat.getActionIndex(event);
+                final float x = MotionEventCompat.getX(event, pointerIndex);
+
+                // Remember where we started (for dragging)
+                mLastRot = x;
+                // Save the ID of this pointer (for dragging)
+                mActivePointerId = MotionEventCompat.getPointerId(event, 0);
+                result = true;
+                break;
+            }
+
+            case MotionEvent.ACTION_MOVE: {
+                // Find the index of the active pointer and fetch its position
+                final int pointerIndex =
+                        MotionEventCompat.findPointerIndex(event, mActivePointerId);
+                if (pointerIndex == MotionEvent.INVALID_POINTER_ID) {
+                    return result = true;
+                }
+
+                final float x = MotionEventCompat.getX(event, pointerIndex);
+
+                // Calculate the distance moved
+                final float dx = x - mLastRot;
+
+                TrajRot += (dx/2f)*(Math.PI/180f);
+
+                drawView.invalidate();
+
+                // Remember this touch position for the next move event
+                mLastRot = x;
+                result = true;
+
+                break;
+            }
+
+            case MotionEvent.ACTION_UP: {
+                mActivePointerId = MotionEvent.INVALID_POINTER_ID;
+                result = true;
+                break;
+            }
+
+            case MotionEvent.ACTION_CANCEL: {
+                mActivePointerId = MotionEvent.INVALID_POINTER_ID;
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private void PrintNotYetImplemented(CharSequence functionName) {
@@ -126,7 +334,7 @@ public class MainActivity extends ActionBarActivity {
         PrintNotYetImplemented("displayTrajData");
 
         if (traj_vertices.isEmpty()) {
-            Log.e(LOG_TAG, "No vertices loaded");
+            Log.e(DEBUG_TAG, "No vertices loaded");
             return;
         }
 
@@ -148,7 +356,7 @@ public class MainActivity extends ActionBarActivity {
         try {
             mPath.mkdirs();
         } catch (SecurityException e) {
-            Log.e(LOG_TAG, "unable to write on the sd card " + e.toString());
+            Log.e(DEBUG_TAG, "unable to write on the sd card " + e.toString());
         }
         if (mPath.exists()) {
             FilenameFilter dirFilter = new FilenameFilter() {
@@ -204,7 +412,7 @@ public class MainActivity extends ActionBarActivity {
 
         builder.setTitle("Choose your file");
         if (mFileList.isEmpty()) {
-            Log.e(LOG_TAG, "Showing file picker before loading the file list");
+            Log.e(DEBUG_TAG, "Showing file picker before loading the file list");
             dialog = builder.create();
             return dialog;
         }
@@ -220,7 +428,7 @@ public class MainActivity extends ActionBarActivity {
                                 top_level += "/";
                             }
                             if (mCurrentDir.equals(top_level)) {
-                                Log.e(LOG_TAG, "Already at top directory");
+                                Log.e(DEBUG_TAG, "Already at top directory");
                                 Context context = getApplicationContext();
                                 CharSequence text = "Invalid file selection. Already at top level directory.";
                                 int duration = Toast.LENGTH_SHORT;
@@ -233,13 +441,13 @@ public class MainActivity extends ActionBarActivity {
                             }
                         } else {
                             mChosenFile = mFileList.get(which);
-                            Log.i(LOG_TAG, "Selected: " + mChosenFile);
+                            Log.i(DEBUG_TAG, "Selected: " + mChosenFile);
 
                             if (FileIsImage() && mLoadType == LoadType.BLUEPRINT) {
-                                Log.i(LOG_TAG, "You have selected an image.");
+                                Log.i(DEBUG_TAG, "You have selected an image.");
                                 readImageData();
                             } else if (FileIsData() && mLoadType == LoadType.TRAJECTORY) {
-                                Log.i(LOG_TAG, "You have selected a trajectory data file.");
+                                Log.i(DEBUG_TAG, "You have selected a trajectory data file.");
                                 readTrajData();
                                 displayTrajData();
                             } else if (FileIsData() && mLoadType == LoadType.LOAD_ALIGNMENT) {
@@ -247,7 +455,7 @@ public class MainActivity extends ActionBarActivity {
                             } else if (mLoadType == LoadType.SAVE_ALIGNMENT) {
                                 PrintNotYetImplemented("SaveAlignment");
                             } else if (FileIsDir()) {
-                                Log.i(LOG_TAG, "Selected a directory");
+                                Log.i(DEBUG_TAG, "Selected a directory");
                                 dialog.dismiss();
                                 createFileSelectorDialog(mCurrentDir + mChosenFile + "/", mLoadType);
                             } else {
@@ -302,5 +510,22 @@ public class MainActivity extends ActionBarActivity {
     public void SelectBlueprint(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.BLUEPRINT);
         dialog.show();
+    }
+
+    public void ResetAlignment(View view) {
+        TrajScale = InitialTrajScale;
+        TrajPosX = InitialTrajPosX;
+        TrajPosY = InitialTrajPosY;
+        TrajRot = InitialTrajRot;
+
+        drawView.invalidate();
+        drawView.requestLayout();
+
+        Context context = getApplicationContext();
+        CharSequence text = "Alignment has been reset.";
+        int duration = Toast.LENGTH_SHORT;
+
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
     }
 }

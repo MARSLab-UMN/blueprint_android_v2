@@ -18,8 +18,6 @@ import android.view.View;
 
 public class DrawView extends View {
     Paint paint = new Paint();
-    GestureDetector mDetector = new GestureDetector(DrawView.this.getContext(), new mListener());
-    ScaleGestureDetector scaleDetector = new ScaleGestureDetector(DrawView.this.getContext(), new ScaleListener());
     static final String DEBUG_TAG = "DrawView";
 
     private void init() {
@@ -46,71 +44,27 @@ public class DrawView extends View {
         Integer[] poses = new Integer[MainActivity.traj_vertices.size() / 3 * 2];
 
         for (int i = 0; i < poses.length; i += 2) {
-            Double x = MainActivity.traj_vertices.get(3 * i / 2) * MainActivity.TrajScale;
-            Double y = MainActivity.traj_vertices.get(3 * i / 2 + 1) * MainActivity.TrajScale;
+            Double x = MainActivity.traj_vertices.get(3 * i / 2);
+            Double y = MainActivity.traj_vertices.get(3 * i / 2 + 1);
             Double z = MainActivity.traj_vertices.get(3 * i / 2 + 2);
 
+            x *= MainActivity.TrajScale;
+            y *= MainActivity.TrajScale;
 
-            Long L = Math.round(x);
-            poses[i] = Integer.valueOf(L.intValue());
-            L = Math.round(y);
-            poses[i + 1] = Integer.valueOf(L.intValue());
+            x = Math.cos(MainActivity.TrajRot) * x - Math.sin(MainActivity.TrajRot) * y;
+            y = Math.sin(MainActivity.TrajRot) * x + Math.cos(MainActivity.TrajRot) * y;
+
+            x += MainActivity.TrajPosX;
+            y += MainActivity.TrajPosY;
+
+
+            Long Lx = Math.round(x);
+            Long Ly = Math.round(y);
+
+            poses[i] = Integer.valueOf(Lx.intValue());
+            poses[i + 1] = Integer.valueOf(Ly.intValue());
         }
         return poses;
-    }
-
-    class mListener extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public boolean onDown(MotionEvent e) {
-            return true;
-        }
-    }
-
-    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            MainActivity.TrajScale *= detector.getScaleFactor();
-            MainActivity.TrajScale = Math.max(0.1f, MainActivity.TrajScale);
-
-            Log.i(DEBUG_TAG, MainActivity.TrajScale + "");
-
-            invalidate();
-            requestLayout();
-
-            return true;
-        }
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        boolean result = mDetector.onTouchEvent(event);
-
-        int num_pointers = event.getPointerCount();
-
-        int action = MotionEventCompat.getActionMasked(event);
-        switch (action) {
-            case (MotionEvent.ACTION_DOWN):
-                Log.d(DEBUG_TAG, "Action was DOWN");
-                result = true;
-            case (MotionEvent.ACTION_MOVE):
-                Log.d(DEBUG_TAG, "Action was MOVE");
-                result = true;
-            case (MotionEvent.ACTION_UP):
-                Log.d(DEBUG_TAG, "Action was UP");
-                result = true;
-            case (MotionEvent.ACTION_CANCEL):
-                Log.d(DEBUG_TAG, "Action was CANCEL");
-                result = true;
-            case (MotionEvent.ACTION_OUTSIDE):
-                Log.d(DEBUG_TAG, "Movement occurred outside bounds " +
-                        "of current screen element");
-                result = true;
-            default:
-                result = super.onTouchEvent(event);
-        }
-
-        result |= scaleDetector.onTouchEvent(event);
-        return result;
     }
 
     @Override
@@ -121,8 +75,6 @@ public class DrawView extends View {
 
         paint.setColor(Color.RED);
         canvas.drawLine(400, 600, 400, 700, paint);
-
-        Log.i("DrawView", MainActivity.traj_vertices.size() + "");
 
         Integer[] poses = PrepTrajPoses();
         paint.setColor(Color.GREEN);
