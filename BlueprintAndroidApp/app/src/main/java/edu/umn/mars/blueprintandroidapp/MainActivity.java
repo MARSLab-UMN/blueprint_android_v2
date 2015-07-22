@@ -154,8 +154,6 @@ public class MainActivity extends ActionBarActivity {
                 result = super.onTouchEvent(event);
         }
 
-//        Log.i(DEBUG_TAG, "Change in X: " + TrajPosX + " Y: " + TrajPosY + " Rot: " + TrajRot + " Scale: " + TrajScale);
-
         return result;
     }
 
@@ -388,6 +386,9 @@ public class MainActivity extends ActionBarActivity {
 
     private void loadFileList(String baseFolderPath) {
         File mPath = new File(baseFolderPath);
+        if (mLoadType == LoadType.SAVE_ALIGNMENT) {
+            mFileList.add("SAVE IN CURRENT DIRECTORY");
+        }
 
         try {
             mPath.mkdirs();
@@ -488,8 +489,34 @@ public class MainActivity extends ActionBarActivity {
                                 displayTrajData();
                             } else if (FileIsData() && mLoadType == LoadType.LOAD_ALIGNMENT) {
                                 readAlignmentData();
-                            } else if (mLoadType == LoadType.SAVE_ALIGNMENT) {
-                                PrintNotYetImplemented("SaveAlignment");
+                            } else if (mLoadType == LoadType.SAVE_ALIGNMENT && which == 0) {
+                                    // selected to save the file in this directory
+                                Log.i(DEBUG_TAG, "HERE");
+//                                AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+//                                builder.setTitle("Save Alignment")
+//                                        .setMessage("Would you like to save the file in, or enter this directory?")
+//                                        .setPositiveButton("Save ", new DialogInterface.OnClickListener() {
+//                                            @Override
+//                                            public void onClick(DialogInterface dialog, int which) {
+//                                                ResetAlignmentData();
+//                                                traj_vertices.clear();
+//
+//                                                blueprintImageView.setImageResource(android.R.color.transparent);
+//
+//                                                Context context = getApplicationContext();
+//                                                CharSequence text = "The app has been reset.";
+//                                                int duration = Toast.LENGTH_SHORT;
+//
+//                                                Toast toast = Toast.makeText(context, text, duration);
+//                                                toast.show();
+//                                            }
+//
+//                                        })
+//                                        .setNegativeButton("No", null);
+//
+//                                AlertDialog dialog = builder.create();
+//                                dialog.show();
+//                                PrintNotYetImplemented("SaveAlignment");
                             } else if (FileIsDir()) {
                                 Log.i(DEBUG_TAG, "Selected a directory");
                                 dialog.dismiss();
@@ -582,7 +609,7 @@ public class MainActivity extends ActionBarActivity {
                         blueprintImageView.setImageResource(android.R.color.transparent);
 
                         Context context = getApplicationContext();
-                        CharSequence text = "The app has been reset";
+                        CharSequence text = "The app has been reset.";
                         int duration = Toast.LENGTH_SHORT;
 
                         Toast toast = Toast.makeText(context, text, duration);

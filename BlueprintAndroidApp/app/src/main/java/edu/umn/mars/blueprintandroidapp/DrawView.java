@@ -75,12 +75,16 @@ public class DrawView extends View {
             canvas.drawLine(poses[i], poses[i + 1], poses[i + 2], poses[i + 3], paint);
         }
 
-        String measStr = "";
-        measStr += "Translate X: " + MainActivity.TrajPosX + ", ";
-        measStr += "Translate Y: " + MainActivity.TrajPosY + ", ";
-        measStr += "Rotation: " + MainActivity.TrajRot + ", ";
-        measStr += "Scale: " + MainActivity.TrajScale + "";
-        MainActivity.measurementTextView.setText(measStr);
+        if (poses.length > 0) {
+            String measStr = "";
+            measStr += "Translate X: " + MainActivity.TrajPosX + ", ";
+            measStr += "Translate Y: " + MainActivity.TrajPosY + ", ";
+            measStr += "Rotation: " + MainActivity.TrajRot + ", ";
+            measStr += "Scale: " + MainActivity.TrajScale + "";
+            MainActivity.measurementTextView.setText(measStr);
+        } else {
+            MainActivity.measurementTextView.setText("Please load a trajectory.");
+        }
     }
 
 }
