@@ -92,6 +92,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@android:color/black"
         android:text="@string/load_alignment_button"
         android:id="@+id/current_alignment_measurements"
         android:layout_alignParentTop="true"

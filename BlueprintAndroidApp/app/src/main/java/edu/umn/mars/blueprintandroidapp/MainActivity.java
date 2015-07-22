@@ -33,8 +33,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -50,6 +52,7 @@ public class MainActivity extends ActionBarActivity {
     static final int state_vec_size = 16;
     private String mChosenFile;
     private String mCurrentDir;
+    private String mBlueprintFile;
     private LoadType mLoadType;
     private static final String FTYPE = ".txt";
     private static final String PNGTYPE = ".png";
@@ -363,6 +366,7 @@ public class MainActivity extends ActionBarActivity {
         try {
             ImageView myImageView = (ImageView) findViewById(R.id.imageview);
             myImageView.setImageBitmap(bitmap);
+            mBlueprintFile = mChosenFile;
         } catch (Exception e) {
 
             Toast.makeText(getBaseContext(), e.getMessage(),
@@ -450,7 +454,7 @@ public class MainActivity extends ActionBarActivity {
 
         alert.setTitle("Create New Directory");
 
-// Set an EditText view to get user input
+        // Set an EditText view to get user input
         final EditText input = new EditText(this);
         input.setHint("New directory name (please avoid spaces)");
         alert.setView(input);
@@ -476,7 +480,7 @@ public class MainActivity extends ActionBarActivity {
                     }
                     if (success) {
                         Log.i(DEBUG_TAG, "Created directory: " + newDir);
-                        createFileSelectorDialog(newDir, mLoadType);
+                        createFileSelectorDialog(mCurrentDir, mLoadType);
                     } else {
                         // Do something else on failure
                         Log.e(DEBUG_TAG, "Unable to create new directory: " + newDir);
@@ -495,7 +499,76 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void SaveCurrentAlignment() {
-        PrintNotYetImplemented("SaveCurrentAlignment");
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Currently saving in: " + mCurrentDir.replace(Environment.getExternalStorageDirectory().toString(), "/sdcard"));
+
+        // Set an EditText view to get user input
+        final EditText input = new EditText(this);
+        if (mBlueprintFile != null && !mBlueprintFile.isEmpty()) {
+            input.setText(mBlueprintFile.substring(0, mBlueprintFile.lastIndexOf('.')) + "_alignment.txt");
+        }
+        alert.setView(input);
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String value = input.getText().toString();
+                if (value.isEmpty() || value.contains(" ")) {
+                    CharSequence text = "Please enter a file name without any spaces.";
+
+                    Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
+                    toast.show();
+                    SaveCurrentAlignment();
+                } else {
+                    String newFile = mCurrentDir + value;
+
+                    File file = new File(newFile);
+                    boolean success = true;
+                    if (file.exists()) {
+                        String message = "File '" + newFile + "' already exists. Please choose another name.";
+                        Log.e(DEBUG_TAG, message);
+                        Toast.makeText(getBaseContext(), message,
+                                Toast.LENGTH_SHORT).show();
+                        SaveCurrentAlignment();
+                        return;
+                    }
+
+                    try {
+                        success = file.createNewFile();
+                        FileOutputStream fOut = new FileOutputStream(file);
+                        OutputStreamWriter myOutWriter =
+                                new OutputStreamWriter(fOut);
+                        myOutWriter.append(Float.toString(TrajPosX) + " ");
+                        myOutWriter.append(Float.toString(TrajPosY) + " ");
+                        myOutWriter.append(Float.toString(TrajRot) + " ");
+                        myOutWriter.append(Float.toString(TrajScale) + " ");
+                        myOutWriter.close();
+                        fOut.close();
+
+                    } catch (Exception e) {
+                        Toast.makeText(getBaseContext(), e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    if (success) {
+                        Log.i(DEBUG_TAG, "Created alignment file: " + newFile);
+                        Toast.makeText(getBaseContext(),"Created alignment file: " + newFile,
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        // Do something else on failure
+                        Log.e(DEBUG_TAG, "Unable to create new alignment file: " + newFile);
+                    }
+                }
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Canceled.
+            }
+        });
+
+        alert.show();
     }
 
     protected Dialog createFileSelectorDialog(String baseFolderPath, LoadType loadType) {
