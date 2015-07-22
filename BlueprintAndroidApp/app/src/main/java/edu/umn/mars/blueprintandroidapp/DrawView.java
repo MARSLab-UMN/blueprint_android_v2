@@ -10,10 +10,15 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 
 public class DrawView extends View {
     Paint paint = new Paint();
+    GestureDetector mDetector = new GestureDetector(DrawView.this.getContext(), new mListener());
+    ScaleGestureDetector scaleDetector = new ScaleGestureDetector(DrawView.this.getContext(),new ScaleListener());
 
     private void init() {
         paint.setColor(Color.BLUE);
@@ -50,6 +55,42 @@ public class DrawView extends View {
             poses[i+1] = Integer.valueOf(L.intValue());
         }
         return poses;
+    }
+
+    class mListener extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+    }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            MainActivity.TrajScale *= detector.getScaleFactor();
+            MainActivity.TrajScale = Math.max(0.1f, MainActivity.TrajScale);
+
+            Log.i("DrawApp", MainActivity.TrajScale+"");
+
+            invalidate();
+            requestLayout();
+
+            return true;
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean result = mDetector.onTouchEvent(event);
+        if (!result) {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                Log.i("DrawView", "Action up");
+                result = true;
+            }
+        }
+
+        result |= scaleDetector.onTouchEvent(event);
+        return result;
     }
 
     @Override
