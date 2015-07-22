@@ -69,15 +69,7 @@ public class DrawView extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-        paint.setColor(Color.BLUE);
-        paint.setStrokeWidth(3f);
-        canvas.drawLine(100, 200, 400, 700, paint);
-
-        paint.setColor(Color.RED);
-        canvas.drawLine(400, 600, 400, 700, paint);
-
         Integer[] poses = PrepTrajPoses();
-        paint.setColor(Color.GREEN);
         for (int i = 0; i < poses.length - 2; i += 2) {
             canvas.drawLine(poses[i], poses[i + 1], poses[i + 2], poses[i + 3], paint);
         }
