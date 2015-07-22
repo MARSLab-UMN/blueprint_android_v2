@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -112,7 +115,21 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void readImageData() {
-        PrintNotYetImplemented("readImageData");
+        // PrintNotYetImplemented("readImageData");
+       //String imageInSD = Environment.getExternalStorageDirectory().getAbsolutePath() +"/house_map/"  + ".JPG";
+        String imageInSD ="/storage/emulated/0/Download/house_map.JPG";
+        Bitmap bitmap = BitmapFactory.decodeFile(imageInSD);
+        try {
+            ImageView myImageView = (ImageView) findViewById(R.id.imageview);
+            myImageView.setImageBitmap(bitmap);
+        }
+        catch (Exception e) {
+
+            Toast.makeText(getBaseContext(), e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+
+
     }
 
     private void readAlignmentData() {
