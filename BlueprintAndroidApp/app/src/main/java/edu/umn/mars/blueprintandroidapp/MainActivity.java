@@ -53,6 +53,7 @@ public class MainActivity extends ActionBarActivity {
 
     // Views
     DrawView drawView;
+    ImageView blueprintImageView;
 
     // Alignment parameters and variables
     static final float InitialTrajScale = 100.0f;
@@ -79,9 +80,10 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = getApplicationContext();
         setContentView(R.layout.activity_main);
         drawView = (DrawView) findViewById(R.id.draw_view);
-        MainActivity.context = getApplicationContext();
+        blueprintImageView = (ImageView) findViewById(R.id.imageview);
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
     }
 
@@ -275,12 +277,12 @@ public class MainActivity extends ActionBarActivity {
 
                 TrajRot += (dx / 2f) * (Math.PI / 180f);
 
-                if (TrajRot >= 2*Math.PI) {
-                    TrajRot -= 2*Math.PI;
+                if (TrajRot >= 2 * Math.PI) {
+                    TrajRot -= 2 * Math.PI;
                 }
 
                 if (TrajRot < 0) {
-                    TrajRot += 2*Math.PI;
+                    TrajRot += 2 * Math.PI;
                 }
 
                 drawView.invalidate();
@@ -339,27 +341,23 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void displayTrajData() {
-        PrintNotYetImplemented("displayTrajData");
-
         if (traj_vertices.isEmpty()) {
             Log.e(DEBUG_TAG, "No vertices loaded");
             return;
         }
 
-        drawView.invalidate();
-        drawView.requestLayout();
+        ResetAlignmentData();
     }
 
     private void readImageData() {
         // PrintNotYetImplemented("readImageData");
-       //String imageInSD = Environment.getExternalStorageDirectory().getAbsolutePath() +"/house_map/"  + ".JPG";
-        String imageInSD ="/storage/emulated/0/Download/house_map.JPG";
+        //String imageInSD = Environment.getExternalStorageDirectory().getAbsolutePath() +"/house_map/"  + ".JPG";
+        String imageInSD = "/storage/emulated/0/Download/house_map.JPG";
         Bitmap bitmap = BitmapFactory.decodeFile(imageInSD);
         try {
             ImageView myImageView = (ImageView) findViewById(R.id.imageview);
             myImageView.setImageBitmap(bitmap);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
@@ -534,7 +532,7 @@ public class MainActivity extends ActionBarActivity {
         dialog.show();
     }
 
-    public void ResetAlignment(View view) {
+    public void ResetAlignmentData() {
         TrajScale = InitialTrajScale;
         TrajPosX = InitialTrajPosX;
         TrajPosY = InitialTrajPosY;
@@ -542,6 +540,10 @@ public class MainActivity extends ActionBarActivity {
 
         drawView.invalidate();
         drawView.requestLayout();
+    }
+
+    public void ResetAlignment(View view) {
+        ResetAlignmentData();
 
         Context context = getApplicationContext();
         CharSequence text = "Alignment has been reset.";
@@ -549,5 +551,32 @@ public class MainActivity extends ActionBarActivity {
 
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
+    }
+
+    public void ResetAll(View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Reset App")
+                .setMessage("Are you sure you want to clear all data from this app?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ResetAlignmentData();
+                        traj_vertices.clear();
+
+                        blueprintImageView.setImageResource(android.R.color.transparent);
+
+                        Context context = getApplicationContext();
+                        CharSequence text = "The app has been reset";
+                        int duration = Toast.LENGTH_SHORT;
+
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+                    }
+
+                })
+                .setNegativeButton("No", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }
