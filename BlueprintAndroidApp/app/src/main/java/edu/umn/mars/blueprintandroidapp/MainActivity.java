@@ -22,7 +22,10 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,6 +57,7 @@ public class MainActivity extends ActionBarActivity {
     // Views
     DrawView drawView;
     ImageView blueprintImageView;
+    static TextView measurementTextView;
 
     // Alignment parameters and variables
     static final float InitialTrajPosX = 0;
@@ -82,6 +86,7 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         context = getApplicationContext();
         setContentView(R.layout.activity_main);
+        measurementTextView = (TextView) findViewById(R.id.current_alignment_measurements);
         drawView = (DrawView) findViewById(R.id.draw_view);
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
