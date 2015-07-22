@@ -71,12 +71,15 @@ public class DrawView extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-        Integer[] poses = PrepTrajPoses();
-        for (int i = 0; i < poses.length - 2; i += 2) {
-            canvas.drawLine(poses[i], poses[i + 1], poses[i + 2], poses[i + 3], paint);
+        if (MainActivity.measurementTextView == null) {
+            return;
         }
 
-        if (poses.length > 0) {
+        if (MainActivity.traj_vertices.size() > 0) {
+            Integer[] poses = PrepTrajPoses();
+            for (int i = 0; i < poses.length - 2; i += 2) {
+                canvas.drawLine(poses[i], poses[i + 1], poses[i + 2], poses[i + 3], paint);
+            }
             String measStr = "";
             measStr += "Translate X: " + MainActivity.TrajPosX + ", ";
             measStr += "Translate Y: " + MainActivity.TrajPosY + ", ";
