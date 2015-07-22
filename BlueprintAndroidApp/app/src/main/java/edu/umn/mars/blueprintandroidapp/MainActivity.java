@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +54,8 @@ public class MainActivity extends ActionBarActivity {
     private static final String PNGTYPE = ".png";
     private static final String JPGTYPE = ".jpg";
     private static final String JPEGTYPE = ".jpeg";
+    private ImageView.ScaleType mScaleType = ImageView.ScaleType.FIT_CENTER;
+
 
     // Views
     DrawView drawView;
@@ -89,6 +92,7 @@ public class MainActivity extends ActionBarActivity {
         measurementTextView = (TextView) findViewById(R.id.current_alignment_measurements);
         drawView = (DrawView) findViewById(R.id.draw_view);
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
+        blueprintImageView.setScaleType(mScaleType);
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
     }
 
@@ -570,6 +574,19 @@ public class MainActivity extends ActionBarActivity {
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
     }
+
+    public void SelectToggle(View view)
+    {
+
+        if(mScaleType == ImageView.ScaleType.CENTER) {
+            mScaleType = ImageView.ScaleType.FIT_CENTER;
+        }else {
+            mScaleType = ImageView.ScaleType.CENTER;
+        }
+        blueprintImageView.setScaleType(mScaleType);
+
+    }
+
 
     public void ResetAll(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
