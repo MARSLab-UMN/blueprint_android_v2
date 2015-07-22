@@ -149,7 +149,7 @@ public class MainActivity extends ActionBarActivity {
                 result = super.onTouchEvent(event);
         }
 
-        Log.i(DEBUG_TAG, "Change in X: " + TrajPosX + " Y: " + TrajPosY + " Rot: " + TrajRot + " Scale: " + TrajScale);
+//        Log.i(DEBUG_TAG, "Change in X: " + TrajPosX + " Y: " + TrajPosY + " Rot: " + TrajRot + " Scale: " + TrajScale);
 
         return result;
     }
@@ -350,9 +350,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void readImageData() {
-        // PrintNotYetImplemented("readImageData");
-        //String imageInSD = Environment.getExternalStorageDirectory().getAbsolutePath() +"/house_map/"  + ".JPG";
-        String imageInSD = "/storage/emulated/0/Download/house_map.JPG";
+        String imageInSD = mCurrentDir + mChosenFile;
         Bitmap bitmap = BitmapFactory.decodeFile(imageInSD);
         try {
             ImageView myImageView = (ImageView) findViewById(R.id.imageview);
@@ -362,8 +360,6 @@ public class MainActivity extends ActionBarActivity {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
         }
-
-
     }
 
     private void readAlignmentData() {
