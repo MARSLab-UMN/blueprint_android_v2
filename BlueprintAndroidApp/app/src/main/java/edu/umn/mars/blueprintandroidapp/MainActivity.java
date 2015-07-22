@@ -64,7 +64,7 @@ public class MainActivity extends ActionBarActivity {
     // Views
     DrawView drawView;
     ImageView blueprintImageView;
-    static TextView measurementTextView;
+    static public TextView measurementTextView;
 
     // Alignment parameters and variables
     static final float InitialTrajPosX = 0;
