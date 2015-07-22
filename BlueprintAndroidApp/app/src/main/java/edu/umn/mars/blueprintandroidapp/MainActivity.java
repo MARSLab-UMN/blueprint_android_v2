@@ -166,8 +166,8 @@ public class MainActivity extends ActionBarActivity {
                 final float y0 = MotionEventCompat.getY(event, 0);
                 final float x1 = MotionEventCompat.getX(event, 1);
                 final float y1 = MotionEventCompat.getY(event, 1);
-                final float x = (x1+x0)/2;
-                final float y = (y1+y0)/2;
+                final float x = (x1 + x0) / 2;
+                final float y = (y1 + y0) / 2;
 
                 // Remember where we started (for dragging)
                 mLastTouchX = x;
@@ -188,8 +188,8 @@ public class MainActivity extends ActionBarActivity {
                 final float y0 = MotionEventCompat.getY(event, 0);
                 final float x1 = MotionEventCompat.getX(event, 1);
                 final float y1 = MotionEventCompat.getY(event, 1);
-                final float x = (x1+x0)/2;
-                final float y = (y1+y0)/2;
+                final float x = (x1 + x0) / 2;
+                final float y = (y1 + y0) / 2;
 
                 // Calculate the distance moved
                 final float dx = x - mLastTouchX;
@@ -210,7 +210,6 @@ public class MainActivity extends ActionBarActivity {
 
             case MotionEvent.ACTION_UP: {
                 mActivePointerId = MotionEvent.INVALID_POINTER_ID;
-                Log.i(DEBUG_TAG, "Normal up");
                 result = true;
                 break;
             }
@@ -226,14 +225,10 @@ public class MainActivity extends ActionBarActivity {
                 final int pointerIndex = MotionEventCompat.getActionIndex(event);
                 final int pointerId = MotionEventCompat.getPointerId(event, pointerIndex);
 
-                Log.e(DEBUG_TAG, "Up with " + pointerId + " and index is " + pointerIndex + " and mActive is " + mActivePointerId);
-//                if (pointerId == mActivePointerId) {
-//                    // This was our active pointer going up. Choose a new
-//                    // active pointer and adjust accordingly.
-                    final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
-                    mLastRot = MotionEventCompat.getX(event, newPointerIndex);
-                    mActivePointerId = MotionEventCompat.getPointerId(event, newPointerIndex);
-//                }
+                final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
+                mLastRot = MotionEventCompat.getX(event, newPointerIndex);
+                mActivePointerId = MotionEventCompat.getPointerId(event, newPointerIndex);
+
                 result = true;
                 break;
             }
@@ -272,7 +267,15 @@ public class MainActivity extends ActionBarActivity {
                 // Calculate the distance moved
                 final float dx = x - mLastRot;
 
-                TrajRot += (dx/2f)*(Math.PI/180f);
+                TrajRot += (dx / 2f) * (Math.PI / 180f);
+
+                if (TrajRot >= 2*Math.PI) {
+                    TrajRot -= 2*Math.PI;
+                }
+
+                if (TrajRot < 0) {
+                    TrajRot += 2*Math.PI;
+                }
 
                 drawView.invalidate();
 
@@ -315,8 +318,7 @@ public class MainActivity extends ActionBarActivity {
             Scanner scan = new Scanner(myFile);
 
             int count = 0;
-            while(scan.hasNextDouble())
-            {
+            while (scan.hasNextDouble()) {
                 if (count % state_vec_size == 13 || count % state_vec_size == 14 || count % state_vec_size == 15) {
                     traj_vertices.add(scan.nextDouble());
                 } else {
@@ -419,7 +421,7 @@ public class MainActivity extends ActionBarActivity {
         builder.setItems(mFileList.toArray(new String[mFileList.size()]),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        if (which == mFileList.size()-1 && true) {
+                        if (which == mFileList.size() - 1 && true) {
                             File file = new File(mCurrentDir + mChosenFile);
                             String parent_folder = file.getParentFile().getName() + "/";
                             String up_a_level = mCurrentDir.substring(0, mCurrentDir.length() - parent_folder.length());
