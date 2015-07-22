@@ -22,6 +22,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -392,6 +393,7 @@ public class MainActivity extends ActionBarActivity {
         File mPath = new File(baseFolderPath);
         if (mLoadType == LoadType.SAVE_ALIGNMENT) {
             mFileList.add("SAVE IN CURRENT DIRECTORY");
+            mFileList.add("CREATE NEW DIRECTORY");
         }
 
         try {
@@ -441,6 +443,59 @@ public class MainActivity extends ActionBarActivity {
 
     private boolean FileIsData() {
         return !FileIsImage() && !FileIsDir();
+    }
+
+    private void CreateNewDirectory() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Create New Directory");
+
+// Set an EditText view to get user input
+        final EditText input = new EditText(this);
+        input.setHint("New directory name (please avoid spaces)");
+        alert.setView(input);
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String value = input.getText().toString();
+                if (value.isEmpty() || value.contains(" ")) {
+                    CharSequence text = "Please enter a directory name without any spaces.";
+
+                    Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
+                    toast.show();
+                    CreateNewDirectory();
+                } else {
+                    String newDir = mCurrentDir + value;
+                    if (!newDir.endsWith("/")) {
+                        newDir += "/";
+                    }
+                    File folder = new File(newDir);
+                    boolean success = true;
+                    if (!folder.exists()) {
+                        success = folder.mkdir();
+                    }
+                    if (success) {
+                        Log.i(DEBUG_TAG, "Created directory: " + newDir);
+                        createFileSelectorDialog(newDir, mLoadType);
+                    } else {
+                        // Do something else on failure
+                        Log.e(DEBUG_TAG, "Unable to create new directory: " + newDir);
+                    }
+                }
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Canceled.
+            }
+        });
+
+        alert.show();
+    }
+
+    private void SaveCurrentAlignment() {
+        PrintNotYetImplemented("SaveCurrentAlignment");
     }
 
     protected Dialog createFileSelectorDialog(String baseFolderPath, LoadType loadType) {
@@ -494,8 +549,11 @@ public class MainActivity extends ActionBarActivity {
                             } else if (FileIsData() && mLoadType == LoadType.LOAD_ALIGNMENT) {
                                 readAlignmentData();
                             } else if (mLoadType == LoadType.SAVE_ALIGNMENT && which == 0) {
-                                    // selected to save the file in this directory
-
+                                // selected to save the file in this directory
+                                SaveCurrentAlignment();
+                            } else if (mLoadType == LoadType.SAVE_ALIGNMENT && which == 1) {
+                                // selected to create new directory
+                                CreateNewDirectory();
                             } else if (FileIsDir()) {
                                 Log.i(DEBUG_TAG, "Selected a directory");
                                 dialog.dismiss();
@@ -575,12 +633,11 @@ public class MainActivity extends ActionBarActivity {
         toast.show();
     }
 
-    public void SelectToggle(View view)
-    {
+    public void SelectToggle(View view) {
 
-        if(mScaleType == ImageView.ScaleType.CENTER) {
+        if (mScaleType == ImageView.ScaleType.CENTER) {
             mScaleType = ImageView.ScaleType.FIT_CENTER;
-        }else {
+        } else {
             mScaleType = ImageView.ScaleType.CENTER;
         }
         blueprintImageView.setScaleType(mScaleType);
