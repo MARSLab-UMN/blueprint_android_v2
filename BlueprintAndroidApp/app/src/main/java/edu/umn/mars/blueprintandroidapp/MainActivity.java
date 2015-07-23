@@ -52,7 +52,7 @@ public class MainActivity extends ActionBarActivity {
     static public List<BlueprintAlignmentData> blueprint_data = new ArrayList<BlueprintAlignmentData>();
 
     static int mNumberOfBlueprints;
-    static final private String DEBUG_TAG = "BlueprintAndroidApp";
+    static final public String DEBUG_TAG = "BlueprintAndroidApp";
     private static Context context;
     private ArrayList<String> mFileList = new ArrayList<String>();
     static final int state_vec_size = 16;
@@ -135,7 +135,13 @@ public class MainActivity extends ActionBarActivity {
             previous_button.setEnabled(true);
         }
 
-//        blueprintImageView.setImageBitmap(blueprint_data.get(mCurrentBlueprintIdx).imageBitmap);
+
+        try {
+            blueprintImageView.setImageBitmap(blueprint_data.get(mCurrentBlueprintIdx).imageBitmap);
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
 
         drawView.invalidate();
         drawView.requestLayout();
@@ -237,6 +243,21 @@ public class MainActivity extends ActionBarActivity {
 //
 //        return super.onOptionsItemSelected(item);
 //    }
+
+    public float GetWidthBlueprintToIVRatio() {
+        float imageViewWidth = blueprintImageView.getWidth();
+
+        Log.i(DEBUG_TAG, "Width is "+imageViewWidth);
+
+        return 1f;
+    }
+
+    public float GetHeightBlueprintToIVRatio() {
+        float imageViewHeight = blueprintImageView.getHeight();
+        Log.i(DEBUG_TAG, "Height is "+imageViewHeight);
+
+        return 1f;
+    }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
@@ -479,54 +500,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    private void readImageData() {
 
-        String imageInSD = mCurrentDir + mChosenFile;
-        Bitmap bitmap = BitmapFactory.decodeFile(imageInSD);
-        try {
-            ImageView myImageView = (ImageView) findViewById(R.id.imageview);
-            readDimensions();
-            myImageView.setImageBitmap(bitmap);
-            mBlueprintFile = mChosenFile;
-        } catch (Exception e) {
-
-            Toast.makeText(getBaseContext(), e.getMessage(),
-                    Toast.LENGTH_SHORT).show();
-        }
-     readDimensions();
-    }
-
-    private void readDimensions(){
-
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = false;              // Dont forget to set to true !!!!
-
-        BitmapFactory.decodeFile(mCurrentDir + mChosenFile, options);
-        int bwidth = options.outWidth;
-            int bheight = options.outHeight;
-            int actualHeight, actualWidth;
-            int imageViewHeight = blueprintImageView.getHeight(), imageViewWidth = blueprintImageView.getWidth();
-            int bitmapHeight =bheight, bitmapWidth = bwidth;
-            if (imageViewHeight * bitmapWidth <= imageViewWidth * bitmapHeight) {
-                actualWidth = bitmapWidth * imageViewHeight / bitmapHeight;
-                actualHeight = imageViewHeight;
-            } else {
-                actualHeight = bitmapHeight * imageViewWidth / bitmapWidth;
-            actualWidth = imageViewWidth;
-
-        }
-
-        Log.i(DEBUG_TAG, "It works !");
-        Context context = getApplicationContext();
-        CharSequence text = "Bw = "+bwidth+"|Iw = "+imageViewWidth+"|Aw = "+actualWidth;
-        int duration = Toast.LENGTH_LONG;
-
-        Toast toast = Toast.makeText(context, text, duration);
-        toast.show();
-
-        Log.i(DEBUG_TAG,"Bw = "+bwidth+"|Iw = "+imageViewWidth+"|Aw = "+actualWidth+"BH = "+bheight+"|Ih = "+imageViewHeight+"|Aw = "+actualHeight);
-
-    }
 
     private void readAlignmentData() {
         try {
@@ -776,7 +750,8 @@ public class MainActivity extends ActionBarActivity {
 
                             if (FileIsImage() && mLoadType == LoadType.BLUEPRINT) {
                                 Log.i(DEBUG_TAG, "You have selected an image.");
-                                readImageData();
+                                blueprint_data.get(mCurrentBlueprintIdx).LoadBlueprintFile(mCurrentDir + mChosenFile);
+                                GoToBlueprintAtIdx(mCurrentBlueprintIdx);
                             } else if (FileIsData() && mLoadType == LoadType.TRAJECTORY) {
                                 Log.i(DEBUG_TAG, "You have selected a trajectory data file.");
                                 readTrajData();
@@ -874,7 +849,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void SelectToggle(View view) {
-
         if (mScaleType == ImageView.ScaleType.CENTER) {
             mScaleType = ImageView.ScaleType.FIT_CENTER;
         } else {
@@ -882,12 +856,7 @@ public class MainActivity extends ActionBarActivity {
         }
         blueprintImageView.setScaleType(mScaleType);
 
-        readDimensions();
-
-
-
-
-
+        PrintNotYetImplemented("readDimensions");
     }
 
 
