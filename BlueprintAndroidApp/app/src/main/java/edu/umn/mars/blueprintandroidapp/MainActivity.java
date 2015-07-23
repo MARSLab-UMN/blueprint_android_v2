@@ -552,17 +552,18 @@ public class MainActivity extends ActionBarActivity {
         alert.show();
     }
 
-    boolean doWriteToFile(File file) {
+    boolean doWriteToFile(File file, boolean shouldAppend) {
         boolean success = false;
         try {
             success = file.createNewFile();
-            FileOutputStream fOut = new FileOutputStream(file);
+            FileOutputStream fOut = new FileOutputStream(file, shouldAppend);
             OutputStreamWriter myOutWriter =
                     new OutputStreamWriter(fOut);
             myOutWriter.append(Float.toString(TrajPosX) + " ");
             myOutWriter.append(Float.toString(TrajPosY) + " ");
             myOutWriter.append(Float.toString(TrajRot) + " ");
             myOutWriter.append(Float.toString(TrajScale) + " ");
+            myOutWriter.append(System.getProperty("line.separator"));
             myOutWriter.close();
             fOut.close();
 
@@ -605,12 +606,14 @@ public class MainActivity extends ActionBarActivity {
                         Log.e(DEBUG_TAG, message);
                         Toast.makeText(getBaseContext(), message,
                                 Toast.LENGTH_SHORT).show();
-                        SaveCurrentAlignment();
+//                        SaveCurrentAlignment();
+                        success = doWriteToFile(file, true);
                         return;
-                    }
 
-                    doWriteToFile(file);
-                    
+                    } else {
+                        boolean shouldAppend = false;
+                        success = doWriteToFile(file, shouldAppend);
+                    }
                     if (success) {
                         Log.i(DEBUG_TAG, "Created alignment file: " + newFile);
                         Toast.makeText(getBaseContext(),"Created alignment file: " + newFile,
