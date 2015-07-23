@@ -121,7 +121,7 @@ public class MainActivity extends ActionBarActivity {
 
         Button next_button = (Button) findViewById(R.id.next_blueprint_button);
         if (mCurrentBlueprintIdx >= mNumberOfBlueprints-1) {
-            next_button.setText("Save Alignment");
+            next_button.setText("Save Config File");
         } else {
             next_button.setText("Next Blueprint");
         }
