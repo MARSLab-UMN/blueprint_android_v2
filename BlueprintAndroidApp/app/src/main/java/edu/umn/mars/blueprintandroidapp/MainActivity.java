@@ -244,20 +244,20 @@ public class MainActivity extends ActionBarActivity {
 //        return super.onOptionsItemSelected(item);
 //    }
 
-//    public float GetWidthBlueprintToIVRatio() {
-//        float imageViewWidth = blueprintImageView.getWidth();
-//
-//        Log.i(DEBUG_TAG, "Width is "+imageViewWidth);
-//
-//        return 1f;
-//    }
-//
-//    public float GetHeightBlueprintToIVRatio() {
-//        float imageViewHeight = blueprintImageView.getHeight();
-//        Log.i(DEBUG_TAG, "Height is "+imageViewHeight);
-//
-//        return 1f;
-//    }
+    public float GetWidthBlueprintToIVRatio() {
+        float imageViewWidth = blueprintImageView.getWidth();
+
+        Log.i(DEBUG_TAG, "Width is " + imageViewWidth);
+
+        return 1f;
+    }
+
+    public float GetHeightBlueprintToIVRatio() {
+        float imageViewHeight = blueprintImageView.getHeight();
+        Log.i(DEBUG_TAG, "Height is " + imageViewHeight);
+
+        return 1f;
+    }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
@@ -849,12 +849,15 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void SelectToggle(View view) {
-        if (mScaleType == ImageView.ScaleType.CENTER) {
+        if (mScaleType == ImageView.ScaleType.FIT_XY) {
             mScaleType = ImageView.ScaleType.FIT_CENTER;
         } else {
-            mScaleType = ImageView.ScaleType.CENTER;
+            mScaleType = ImageView.ScaleType.FIT_XY;
         }
         blueprintImageView.setScaleType(mScaleType);
+
+        GetWidthBlueprintToIVRatio();
+        GetHeightBlueprintToIVRatio();
 
         PrintNotYetImplemented("readDimensions");
     }
