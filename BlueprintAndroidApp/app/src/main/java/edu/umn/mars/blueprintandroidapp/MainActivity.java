@@ -770,7 +770,7 @@ public class MainActivity extends ActionBarActivity {
 
                             if (FileIsImage() && mLoadType == LoadType.BLUEPRINT) {
                                 Log.i(DEBUG_TAG, "You have selected an image.");
-                                blueprint_data.get(mCurrentBlueprintIdx).LoadBlueprintFile(mCurrentDir + mChosenFile);
+                                blueprint_data.get(mCurrentBlueprintIdx).LoadBlueprintFile(mCurrentDir + mChosenFile, blueprintImageView);
                                 GoToBlueprintAtIdx(mCurrentBlueprintIdx);
                             } else if (FileIsData() && mLoadType == LoadType.TRAJECTORY) {
                                 Log.i(DEBUG_TAG, "You have selected a trajectory data file.");

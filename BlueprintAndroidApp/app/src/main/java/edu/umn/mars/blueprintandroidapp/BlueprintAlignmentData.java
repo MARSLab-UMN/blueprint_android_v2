@@ -26,6 +26,15 @@ public class BlueprintAlignmentData {
     public int bitmapHeight;
     public int bitmapWidth;
 
+    public int startBitmapFITCENTERX;
+    public int startBitmapFITCENTERY;
+
+    public float blueprintToImageViewPixelsX_FITCENTER;
+    public float blueprintToImageViewPixelsY_FITCENTER;
+    public float blueprintToImageViewPixelsX_FITXY;
+    public float blueprintToImageViewPixelsY_FITXY;
+
+
     BlueprintAlignmentData() {
         ResetAlignmentData();
     }
@@ -37,7 +46,7 @@ public class BlueprintAlignmentData {
         TrajRot = InitialTrajRot;
     }
 
-    void LoadBlueprintFile(String location) {
+    void LoadBlueprintFile(String location, ImageView iv) {
         blueprintFileLocation = location;
 
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -47,7 +56,23 @@ public class BlueprintAlignmentData {
         bitmapWidth = options.outWidth;
         bitmapHeight = options.outHeight;
 
-        Log.i(MainActivity.DEBUG_TAG,"Bw = "+bitmapWidth+"|Iw = "+"BH = "+bitmapHeight);
+        blueprintToImageViewPixelsX_FITXY = bitmapWidth * 1f / iv.getWidth();
+        blueprintToImageViewPixelsY_FITXY = bitmapHeight * 1f / iv.getHeight();
+
+        if (bitmapWidth*1f/bitmapHeight > iv.getWidth()*1f/iv.getHeight()) {
+            blueprintToImageViewPixelsX_FITCENTER = blueprintToImageViewPixelsX_FITXY;
+            blueprintToImageViewPixelsY_FITCENTER = blueprintToImageViewPixelsY_FITXY * (iv.getWidth()*1f/bitmapWidth);
+        } else {
+            blueprintToImageViewPixelsY_FITCENTER = blueprintToImageViewPixelsY_FITXY;
+            blueprintToImageViewPixelsX_FITCENTER = blueprintToImageViewPixelsX_FITXY * (iv.getHeight()*1f/bitmapHeight);
+        }
+
+        Log.i(MainActivity.DEBUG_TAG,blueprintToImageViewPixelsX_FITXY + " " + blueprintToImageViewPixelsY_FITXY + " " +blueprintToImageViewPixelsX_FITCENTER + " " + blueprintToImageViewPixelsY_FITCENTER);
+
+        startBitmapFITCENTERX = Math.round(bitmapWidth / blueprintToImageViewPixelsX_FITCENTER / 2f - iv.getWidth() / 2f);
+        startBitmapFITCENTERY = Math.round(iv.getHeight() / 2f - bitmapHeight / blueprintToImageViewPixelsY_FITCENTER / 2f);
+
+        Log.i(MainActivity.DEBUG_TAG, "Starting " + startBitmapFITCENTERX + " " + startBitmapFITCENTERY);
     }
 
 
