@@ -1,5 +1,7 @@
 package edu.umn.mars.blueprintandroidapp;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by mars on 7/23/15.
  */
@@ -14,7 +16,8 @@ public class BlueprintAlignmentData {
     public float TrajRot;
     public float TrajScale;
 
-    public String BlueprintFileLocation;
+    public String blueprintFileLocation;
+    public Bitmap imageBitmap;
 
     BlueprintAlignmentData() {
         ResetAlignmentData();
@@ -28,7 +31,7 @@ public class BlueprintAlignmentData {
     }
 
     void LoadBlueprintFile(String location) {
-        BlueprintFileLocation = location;
+        blueprintFileLocation = location;
 
     }
 }

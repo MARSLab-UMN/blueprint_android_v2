@@ -133,6 +133,8 @@ public class MainActivity extends ActionBarActivity {
             previous_button.setEnabled(true);
         }
 
+//        blueprintImageView.setImageBitmap(blueprint_data.get(mCurrentBlueprintIdx).imageBitmap);
+
         drawView.invalidate();
         drawView.requestLayout();
     }
