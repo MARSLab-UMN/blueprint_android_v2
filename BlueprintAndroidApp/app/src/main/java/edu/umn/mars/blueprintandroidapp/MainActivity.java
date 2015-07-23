@@ -25,6 +25,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +48,7 @@ public class MainActivity extends ActionBarActivity {
     //In an Activity
     static public List<Double> traj_vertices = new ArrayList<Double>();
 
+    static int mNumberOfBlueprints;
     static final private String DEBUG_TAG = "BlueprintAndroidApp";
     private static Context context;
     private ArrayList<String> mFileList = new ArrayList<String>();
@@ -70,6 +72,12 @@ public class MainActivity extends ActionBarActivity {
     static public CheckBox lockRotationCheckBox;
     static public CheckBox lockScaleCheckBox;
     static public TextView measurementTextView;
+
+    // alignment classes
+    class BlueprintAlignmentData {
+        public int x;
+        public int y;
+    }
 
     // Alignment parameters and variables
     static final float InitialTrajPosX = 0;
@@ -107,8 +115,67 @@ public class MainActivity extends ActionBarActivity {
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
         blueprintImageView.setScaleType(mScaleType);
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
+        requestNumberOfBlueprints();
     }
 
+
+    void requestNumberOfBlueprints() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Number of Blueprints")
+                .setMessage("How many blueprints are you aligning for this building?")
+                .setNegativeButton("1", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MainActivity.mNumberOfBlueprints = 1;
+                    }
+
+                })
+                .setNeutralButton("2", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MainActivity.mNumberOfBlueprints = 2;
+                    }
+
+                })
+                .setPositiveButton("More", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+
+                        alert.setTitle("Select Number of Blueprints");
+
+                        // Set an EditText view to get user input
+//                        final EditText input = new EditText(getApplicationContext());
+                        final NumberPicker np = new NumberPicker(MainActivity.this);
+                        np.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+                        np.setMinValue(1);
+                        np.setMaxValue(20);
+                        np.setValue(3);
+                        alert.setView(np);
+
+                        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+//                                int value = Integer.getInteger(input.getText().toString());
+                                MainActivity.mNumberOfBlueprints = np.getValue();
+                                Log.i(DEBUG_TAG, "num: " + mNumberOfBlueprints);
+                            }
+                        });
+
+                        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                requestNumberOfBlueprints();
+                            }
+                        });
+                        alert.setCancelable(false);
+                        alert.show();
+                    }
+
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(false);
+        dialog.show();
+    }
 
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
@@ -607,7 +674,7 @@ public class MainActivity extends ActionBarActivity {
                         Toast.makeText(getBaseContext(), message,
                                 Toast.LENGTH_SHORT).show();
 //                        SaveCurrentAlignment();
-                        success = doWriteToFile(file, true);
+                        success = doWriteToFile(file, false);
                         return;
 
                     } else {
