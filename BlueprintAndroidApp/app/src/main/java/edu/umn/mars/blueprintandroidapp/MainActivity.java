@@ -245,17 +245,37 @@ public class MainActivity extends ActionBarActivity {
 //    }
 
     public float GetWidthBlueprintToIVRatio() {
-        float imageViewWidth = blueprintImageView.getWidth();
-
-        Log.i(DEBUG_TAG, "Width is " + imageViewWidth);
-
+//        blueprintImageView.requestLayout();
+//        float imageViewWidth = blueprintImageView.getWidth();
+//
+//        Log.i(DEBUG_TAG, "Width is " + imageViewWidth);
+//
         return 1f;
     }
 
     public float GetHeightBlueprintToIVRatio() {
-        float imageViewHeight = blueprintImageView.getHeight();
-        Log.i(DEBUG_TAG, "Height is " + imageViewHeight);
-
+//        blueprintImageView.invalidate();
+//        blueprintImageView.requestLayout();
+//
+////        float imageViewHeight = blueprintImageView.getHeight();
+////        Log.i(DEBUG_TAG, "Height is " + imageViewHeight);
+////
+////        float[] f = new float[9];
+////        blueprintImageView.getImageMatrix().getValues(f);
+////        final float scaleX = f[blueprintImageView.getMatrix().MSCALE_X];
+////        final float scaleY = f[blueprintImageView.getMatrix().MSCALE_Y];
+////
+////        // Get the drawable (could also get the bitmap behind the drawable and getWidth/getHeight)
+////        final Drawable d = blueprintImageView.getDrawable();
+////        final int origW = d.getIntrinsicWidth();
+////        final int origH = d.getIntrinsicHeight();
+////
+////        // Calculate the actual dimensions
+////        final int actW = Math.round(origW * scaleX);
+////        final int actH = Math.round(origH * scaleY);
+////
+////        Log.e("DBG", "["+origW+","+origH+"] -> ["+actW+","+actH+"] & scales: x="+scaleX+" y="+scaleY);
+//
         return 1f;
     }
 
@@ -849,12 +869,17 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void SelectToggle(View view) {
+        // if you change these, you will likely have to change how the scale is calculated
+        // We assume it fills the parent
         if (mScaleType == ImageView.ScaleType.FIT_XY) {
             mScaleType = ImageView.ScaleType.FIT_CENTER;
         } else {
             mScaleType = ImageView.ScaleType.FIT_XY;
         }
         blueprintImageView.setScaleType(mScaleType);
+
+        blueprintImageView.invalidate();
+        blueprintImageView.requestLayout();
 
         GetWidthBlueprintToIVRatio();
         GetHeightBlueprintToIVRatio();
