@@ -12,8 +12,12 @@
     <string name="lock_rotation">Lock rotation</string>
     <string name="lock_scale">Lock scaling</string>
 
+    <!--UI Labels-->
+    <string name="current_blueprint_label"></string>
+
     <!--Settings Menu-->
     <string name="load_alignment_button">Load Alignment</string>
-    <string name="save_alignment_button">Save Alignment</string>
+    <string name="next_blueprint_button">Next Blueprint</string>
+    <string name="back_blueprint_button">Previous Blueprint</string>
     <string name="action_settings">Settings</string>
 </resources>
