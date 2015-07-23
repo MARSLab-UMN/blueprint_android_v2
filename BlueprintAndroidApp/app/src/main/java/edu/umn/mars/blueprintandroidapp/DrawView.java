@@ -44,20 +44,23 @@ public class DrawView extends View {
     private Integer[] PrepTrajPoses() {
         Integer[] poses = new Integer[MainActivity.traj_vertices.size() / 3 * 2];
 
+        double cosVal = Math.cos(MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot);
+        double sinVal = Math.sin(MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot);
+
         for (int i = 0; i < poses.length; i += 2) {
             Double x = MainActivity.traj_vertices.get(3 * i / 2);
             Double y = MainActivity.traj_vertices.get(3 * i / 2 + 1);
             Double z = MainActivity.traj_vertices.get(3 * i / 2 + 2);
 
-            x *= MainActivity.TrajScale;
-            y *= MainActivity.TrajScale;
+            x *= MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale;
+            y *= MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale;
 
-            double temp = Math.cos(MainActivity.TrajRot) * x - Math.sin(MainActivity.TrajRot) * y;
-            y = Math.sin(MainActivity.TrajRot) * x + Math.cos(MainActivity.TrajRot) * y;
+            double temp = cosVal * x - sinVal * y;
+            y = sinVal * x + cosVal * y;
             x = temp;
 
-            x += MainActivity.TrajPosX;
-            y += MainActivity.TrajPosY;
+            x += MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX;
+            y += MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY;
 
 
             Long Lx = Math.round(x);
@@ -81,10 +84,10 @@ public class DrawView extends View {
                 canvas.drawLine(poses[i], poses[i + 1], poses[i + 2], poses[i + 3], paint);
             }
             String measStr = "";
-            measStr += "Translate X: " + MainActivity.TrajPosX + ", ";
-            measStr += "Translate Y: " + MainActivity.TrajPosY + ", ";
-            measStr += "Rotation: " + MainActivity.TrajRot + ", ";
-            measStr += "Scale: " + MainActivity.TrajScale + "";
+            measStr += "Translate X: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX + ", ";
+            measStr += "Translate Y: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY + ", ";
+            measStr += "Rotation: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot + ", ";
+            measStr += "Scale: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale + "";
             MainActivity.measurementTextView.setText(measStr);
         } else {
             MainActivity.measurementTextView.setText("Please load a trajectory.");

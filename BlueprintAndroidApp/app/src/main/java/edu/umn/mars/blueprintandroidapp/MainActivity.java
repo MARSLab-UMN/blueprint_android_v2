@@ -47,6 +47,7 @@ import java.util.Scanner;
 public class MainActivity extends ActionBarActivity {
     //In an Activity
     static public List<Double> traj_vertices = new ArrayList<Double>();
+    static public List<BlueprintAlignmentData> blueprint_data = new ArrayList<BlueprintAlignmentData>();
 
     static int mNumberOfBlueprints;
     static final private String DEBUG_TAG = "BlueprintAndroidApp";
@@ -56,6 +57,7 @@ public class MainActivity extends ActionBarActivity {
     private String mChosenFile;
     private String mCurrentDir;
     private String mBlueprintFile;
+    public static int mCurrentBlueprintIdx;
     private LoadType mLoadType;
     private static final String FTYPE = ".txt";
     private static final String PNGTYPE = ".png";
@@ -72,22 +74,9 @@ public class MainActivity extends ActionBarActivity {
     static public CheckBox lockRotationCheckBox;
     static public CheckBox lockScaleCheckBox;
     static public TextView measurementTextView;
-
-    // alignment classes
-    class BlueprintAlignmentData {
-        public int x;
-        public int y;
-    }
+    static public TextView currentBlueprintTextView;
 
     // Alignment parameters and variables
-    static final float InitialTrajPosX = 0;
-    static final float InitialTrajPosY = 0;
-    static final float InitialTrajRot = 0;
-    static final float InitialTrajScale = 100.0f;
-    static float TrajPosX = InitialTrajPosX;
-    static float TrajPosY = InitialTrajPosY;
-    static float TrajRot = InitialTrajRot;
-    static float TrajScale = InitialTrajScale;
     private int mActivePointerId = MotionEvent.INVALID_POINTER_ID;
     ScaleGestureDetector scaleDetector;
     private float mLastRot, mLastTouchX, mLastTouchY;
@@ -107,6 +96,7 @@ public class MainActivity extends ActionBarActivity {
         context = getApplicationContext();
         setContentView(R.layout.activity_main);
         measurementTextView = (TextView) findViewById(R.id.current_alignment_measurements);
+        currentBlueprintTextView = (TextView) findViewById(R.id.current_blueprint_label);
         lockXCheckBox = (CheckBox) findViewById(R.id.lock_x);
         lockYCheckBox = (CheckBox) findViewById(R.id.lock_y);
         lockRotationCheckBox = (CheckBox) findViewById(R.id.lock_rotation);
@@ -118,6 +108,43 @@ public class MainActivity extends ActionBarActivity {
         requestNumberOfBlueprints();
     }
 
+    void GoToBlueprintAtIdx(int idx) {
+        if (idx >= mNumberOfBlueprints) {
+            mCurrentBlueprintIdx = mNumberOfBlueprints - 1;
+        } else if (idx < 0) {
+            mCurrentBlueprintIdx = 0;
+        } else {
+            mCurrentBlueprintIdx = idx;
+        }
+
+        currentBlueprintTextView.setText("Blueprint " + (mCurrentBlueprintIdx+1) + " of " + mNumberOfBlueprints);
+
+        Button next_button = (Button) findViewById(R.id.next_blueprint_button);
+        if (mCurrentBlueprintIdx >= mNumberOfBlueprints-1) {
+            next_button.setText("Save Alignment");
+        } else {
+            next_button.setText("Next Blueprint");
+        }
+
+        Button previous_button = (Button) findViewById(R.id.back_blueprint_button);
+        if (mCurrentBlueprintIdx == 0) {
+            previous_button.setEnabled(false);
+        } else {
+            previous_button.setEnabled(true);
+        }
+
+        drawView.invalidate();
+        drawView.requestLayout();
+    }
+
+    void setBlueprintClasses() {
+        blueprint_data.clear();
+        for (int i = 0; i < mNumberOfBlueprints; i++) {
+            blueprint_data.add(new BlueprintAlignmentData());
+        }
+
+        GoToBlueprintAtIdx(0);
+    }
 
     void requestNumberOfBlueprints() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -127,6 +154,7 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         MainActivity.mNumberOfBlueprints = 1;
+                        setBlueprintClasses();
                     }
 
                 })
@@ -134,6 +162,7 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         MainActivity.mNumberOfBlueprints = 2;
+                        setBlueprintClasses();
                     }
 
                 })
@@ -141,11 +170,8 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
-
                         alert.setTitle("Select Number of Blueprints");
 
-                        // Set an EditText view to get user input
-//                        final EditText input = new EditText(getApplicationContext());
                         final NumberPicker np = new NumberPicker(MainActivity.this);
                         np.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
                         np.setMinValue(1);
@@ -157,10 +183,10 @@ public class MainActivity extends ActionBarActivity {
                             public void onClick(DialogInterface dialog, int whichButton) {
 //                                int value = Integer.getInteger(input.getText().toString());
                                 MainActivity.mNumberOfBlueprints = np.getValue();
+                                setBlueprintClasses();
                                 Log.i(DEBUG_TAG, "num: " + mNumberOfBlueprints);
                             }
                         });
-
                         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 requestNumberOfBlueprints();
@@ -215,8 +241,8 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             }
 
-            MainActivity.TrajScale *= detector.getScaleFactor();
-            MainActivity.TrajScale = Math.max(0.1f, MainActivity.TrajScale);
+            MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale *= detector.getScaleFactor();
+            MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale = Math.max(0.1f, MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale);
 
             drawView.invalidate();
             drawView.requestLayout();
@@ -295,10 +321,10 @@ public class MainActivity extends ActionBarActivity {
                 final float dy = y - mLastTouchY;
 
                 if (!lockXCheckBox.isChecked()) {
-                    TrajPosX += dx;
+                    blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX += dx;
                 }
                 if (!lockYCheckBox.isChecked()) {
-                    TrajPosY += dy;
+                    blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY += dy;
                 }
 
                 drawView.invalidate();
@@ -372,14 +398,14 @@ public class MainActivity extends ActionBarActivity {
 
                 if (!lockRotationCheckBox.isChecked()) {
 
-                    TrajRot += (dx / 2f) * (Math.PI / 180f);
+                    blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot += (dx / 2f) * (Math.PI / 180f);
 
-                    if (TrajRot >= 2 * Math.PI) {
-                        TrajRot -= 2 * Math.PI;
+                    if (blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot >= 2 * Math.PI) {
+                        blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot -= 2 * Math.PI;
                     }
 
-                    if (TrajRot < 0) {
-                        TrajRot += 2 * Math.PI;
+                    if (blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot < 0) {
+                        blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot += 2 * Math.PI;
                     }
                 }
 
@@ -500,10 +526,10 @@ public class MainActivity extends ActionBarActivity {
             File myFile = new File(mCurrentDir + mChosenFile);
             Scanner scan = new Scanner(myFile);
 
-            TrajPosX = scan.nextFloat();
-            TrajPosY = scan.nextFloat();
-            TrajRot = scan.nextFloat();
-            TrajScale = scan.nextFloat();
+            blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX = scan.nextFloat();
+            blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY = scan.nextFloat();
+            blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot = scan.nextFloat();
+            blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale = scan.nextFloat();
 
             drawView.invalidate();
             drawView.requestLayout();
@@ -619,17 +645,17 @@ public class MainActivity extends ActionBarActivity {
         alert.show();
     }
 
-    boolean doWriteToFile(File file, boolean shouldAppend) {
+    boolean doWriteToFile(File file) {
         boolean success = false;
         try {
             success = file.createNewFile();
-            FileOutputStream fOut = new FileOutputStream(file, shouldAppend);
+            FileOutputStream fOut = new FileOutputStream(file, false);
             OutputStreamWriter myOutWriter =
                     new OutputStreamWriter(fOut);
-            myOutWriter.append(Float.toString(TrajPosX) + " ");
-            myOutWriter.append(Float.toString(TrajPosY) + " ");
-            myOutWriter.append(Float.toString(TrajRot) + " ");
-            myOutWriter.append(Float.toString(TrajScale) + " ");
+            myOutWriter.append(Float.toString(blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX) + " ");
+            myOutWriter.append(Float.toString(blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY) + " ");
+            myOutWriter.append(Float.toString(blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot) + " ");
+            myOutWriter.append(Float.toString(blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale) + " ");
             myOutWriter.append(System.getProperty("line.separator"));
             myOutWriter.close();
             fOut.close();
@@ -673,17 +699,15 @@ public class MainActivity extends ActionBarActivity {
                         Log.e(DEBUG_TAG, message);
                         Toast.makeText(getBaseContext(), message,
                                 Toast.LENGTH_SHORT).show();
-//                        SaveCurrentAlignment();
-                        success = doWriteToFile(file, false);
+                        SaveCurrentAlignment();
                         return;
 
                     } else {
-                        boolean shouldAppend = false;
-                        success = doWriteToFile(file, shouldAppend);
+                        success = doWriteToFile(file);
                     }
                     if (success) {
                         Log.i(DEBUG_TAG, "Created alignment file: " + newFile);
-                        Toast.makeText(getBaseContext(),"Created alignment file: " + newFile,
+                        Toast.makeText(getBaseContext(), "Created alignment file: " + newFile,
                                 Toast.LENGTH_SHORT).show();
                     } else {
                         // Do something else on failure
@@ -801,9 +825,17 @@ public class MainActivity extends ActionBarActivity {
         dialog.show();
     }
 
-    public void SaveAlignment(View view) {
-        Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.SAVE_ALIGNMENT);
-        dialog.show();
+    public void NextBlueprint(View view) {
+        if (mCurrentBlueprintIdx >= mNumberOfBlueprints-1) {
+            Dialog fileSelectDialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.SAVE_ALIGNMENT);
+            fileSelectDialog.show();
+        } else {
+            GoToBlueprintAtIdx(mCurrentBlueprintIdx+1);
+        }
+    }
+
+    public void PreviousBlueprint(View view) {
+            GoToBlueprintAtIdx(mCurrentBlueprintIdx-1);
     }
 
     public void SelectTrajectory(View view) {
@@ -817,10 +849,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void ResetAlignmentData() {
-        TrajScale = InitialTrajScale;
-        TrajPosX = InitialTrajPosX;
-        TrajPosY = InitialTrajPosY;
-        TrajRot = InitialTrajRot;
+        blueprint_data.get(mCurrentBlueprintIdx).ResetAlignmentData();
 
         drawView.invalidate();
         drawView.requestLayout();
@@ -864,8 +893,11 @@ public class MainActivity extends ActionBarActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         ResetAlignmentData();
                         traj_vertices.clear();
+                        blueprint_data.clear();
 
                         blueprintImageView.setImageResource(android.R.color.transparent);
+                        requestNumberOfBlueprints();
+                        setBlueprintClasses();
 
                         Context context = getApplicationContext();
                         CharSequence text = "The app has been reset.";
@@ -873,6 +905,8 @@ public class MainActivity extends ActionBarActivity {
 
                         Toast toast = Toast.makeText(context, text, duration);
                         toast.show();
+
+
                     }
 
                 })
