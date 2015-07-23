@@ -15,6 +15,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.TextView;
 
 public class DrawView extends View {
     Paint paint = new Paint();
@@ -51,8 +52,9 @@ public class DrawView extends View {
             x *= MainActivity.TrajScale;
             y *= MainActivity.TrajScale;
 
-            x = Math.cos(MainActivity.TrajRot) * x - Math.sin(MainActivity.TrajRot) * y;
+            double temp = Math.cos(MainActivity.TrajRot) * x - Math.sin(MainActivity.TrajRot) * y;
             y = Math.sin(MainActivity.TrajRot) * x + Math.cos(MainActivity.TrajRot) * y;
+            x = temp;
 
             x += MainActivity.TrajPosX;
             y += MainActivity.TrajPosY;
@@ -69,9 +71,23 @@ public class DrawView extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-        Integer[] poses = PrepTrajPoses();
-        for (int i = 0; i < poses.length - 2; i += 2) {
-            canvas.drawLine(poses[i], poses[i + 1], poses[i + 2], poses[i + 3], paint);
+        if (MainActivity.measurementTextView == null) {
+            return;
+        }
+
+        if (MainActivity.traj_vertices.size() > 0) {
+            Integer[] poses = PrepTrajPoses();
+            for (int i = 0; i < poses.length - 2; i += 2) {
+                canvas.drawLine(poses[i], poses[i + 1], poses[i + 2], poses[i + 3], paint);
+            }
+            String measStr = "";
+            measStr += "Translate X: " + MainActivity.TrajPosX + ", ";
+            measStr += "Translate Y: " + MainActivity.TrajPosY + ", ";
+            measStr += "Rotation: " + MainActivity.TrajRot + ", ";
+            measStr += "Scale: " + MainActivity.TrajScale + "";
+            MainActivity.measurementTextView.setText(measStr);
+        } else {
+            MainActivity.measurementTextView.setText("Please load a trajectory.");
         }
     }
 

@@ -24,15 +24,22 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -48,6 +55,7 @@ public class MainActivity extends ActionBarActivity {
     static final int state_vec_size = 16;
     private String mChosenFile;
     private String mCurrentDir;
+    private String mBlueprintFile;
     private LoadType mLoadType;
     private static final String FTYPE = ".txt";
     private static final String PNGTYPE = ".png";
@@ -59,16 +67,21 @@ public class MainActivity extends ActionBarActivity {
     // Views
     DrawView drawView;
     ImageView blueprintImageView;
+    static public CheckBox lockXCheckBox;
+    static public CheckBox lockYCheckBox;
+    static public CheckBox lockRotationCheckBox;
+    static public CheckBox lockScaleCheckBox;
+    static public TextView measurementTextView;
 
     // Alignment parameters and variables
-    static final float InitialTrajScale = 100.0f;
     static final float InitialTrajPosX = 0;
     static final float InitialTrajPosY = 0;
     static final float InitialTrajRot = 0;
-    static float TrajScale = InitialTrajScale;
+    static final float InitialTrajScale = 100.0f;
     static float TrajPosX = InitialTrajPosX;
     static float TrajPosY = InitialTrajPosY;
     static float TrajRot = InitialTrajRot;
+    static float TrajScale = InitialTrajScale;
     private int mActivePointerId = MotionEvent.INVALID_POINTER_ID;
     ScaleGestureDetector scaleDetector;
     private float mLastRot, mLastTouchX, mLastTouchY;
@@ -87,6 +100,11 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         context = getApplicationContext();
         setContentView(R.layout.activity_main);
+        measurementTextView = (TextView) findViewById(R.id.current_alignment_measurements);
+        lockXCheckBox = (CheckBox) findViewById(R.id.lock_x);
+        lockYCheckBox = (CheckBox) findViewById(R.id.lock_y);
+        lockRotationCheckBox = (CheckBox) findViewById(R.id.lock_rotation);
+        lockScaleCheckBox = (CheckBox) findViewById(R.id.lock_scale);
         drawView = (DrawView) findViewById(R.id.draw_view);
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
         blueprintImageView.setScaleType(mScaleType);
@@ -94,40 +112,44 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.menu_main, menu);
+//        return true;
+//    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        switch (id) {
-            case R.id.action_settings:
-                PrintNotYetImplemented("SelectSettings");
-                return true;
-            case R.id.action_load_alignment:
-                LoadAlignment();
-                return true;
-            case R.id.action_save_alignment:
-                SaveAlignment();
-                return true;
-            default:
-                break;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle action bar item clicks here. The action bar will
+//        // automatically handle clicks on the Home/Up button, so long
+//        // as you specify a parent activity in AndroidManifest.xml.
+//        int id = item.getItemId();
+//
+//        switch (id) {
+//            case R.id.action_settings:
+//                PrintNotYetImplemented("SelectSettings");
+//                return true;
+//            case R.id.action_load_alignment:
+//                LoadAlignment();
+//                return true;
+//            case R.id.action_save_alignment:
+//                SaveAlignment();
+//                return true;
+//            default:
+//                break;
+//        }
+//
+//        return super.onOptionsItemSelected(item);
+//    }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
+            if (lockScaleCheckBox.isChecked()) {
+                return true;
+            }
+
             MainActivity.TrajScale *= detector.getScaleFactor();
             MainActivity.TrajScale = Math.max(0.1f, MainActivity.TrajScale);
 
@@ -154,8 +176,6 @@ public class MainActivity extends ActionBarActivity {
             default:
                 result = super.onTouchEvent(event);
         }
-
-//        Log.i(DEBUG_TAG, "Change in X: " + TrajPosX + " Y: " + TrajPosY + " Rot: " + TrajRot + " Scale: " + TrajScale);
 
         return result;
     }
@@ -209,8 +229,12 @@ public class MainActivity extends ActionBarActivity {
                 final float dx = x - mLastTouchX;
                 final float dy = y - mLastTouchY;
 
-                TrajPosX += dx;
-                TrajPosY += dy;
+                if (!lockXCheckBox.isChecked()) {
+                    TrajPosX += dx;
+                }
+                if (!lockYCheckBox.isChecked()) {
+                    TrajPosY += dy;
+                }
 
                 drawView.invalidate();
 
@@ -281,17 +305,21 @@ public class MainActivity extends ActionBarActivity {
                 // Calculate the distance moved
                 final float dx = x - mLastRot;
 
-                TrajRot += (dx / 2f) * (Math.PI / 180f);
+                if (!lockRotationCheckBox.isChecked()) {
 
-                if (TrajRot >= 2 * Math.PI) {
-                    TrajRot -= 2 * Math.PI;
-                }
+                    TrajRot += (dx / 2f) * (Math.PI / 180f);
 
-                if (TrajRot < 0) {
-                    TrajRot += 2 * Math.PI;
+                    if (TrajRot >= 2 * Math.PI) {
+                        TrajRot -= 2 * Math.PI;
+                    }
+
+                    if (TrajRot < 0) {
+                        TrajRot += 2 * Math.PI;
+                    }
                 }
 
                 drawView.invalidate();
+                drawView.requestLayout();
 
                 // Remember this touch position for the next move event
                 mLastRot = x;
@@ -326,7 +354,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void readTrajData() {
         traj_vertices.clear();
-        // write on SD card file data in the text box
+
         try {
             File myFile = new File(mCurrentDir + mChosenFile);
             Scanner scan = new Scanner(myFile);
@@ -364,6 +392,7 @@ public class MainActivity extends ActionBarActivity {
             ImageView myImageView = (ImageView) findViewById(R.id.imageview);
             readDimensions();
             myImageView.setImageBitmap(bitmap);
+            mBlueprintFile = mChosenFile;
         } catch (Exception e) {
 
             Toast.makeText(getBaseContext(), e.getMessage(),
@@ -405,11 +434,30 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void readAlignmentData() {
-        PrintNotYetImplemented("readAlignmentData");
+        try {
+            File myFile = new File(mCurrentDir + mChosenFile);
+            Scanner scan = new Scanner(myFile);
+
+            TrajPosX = scan.nextFloat();
+            TrajPosY = scan.nextFloat();
+            TrajRot = scan.nextFloat();
+            TrajScale = scan.nextFloat();
+
+            drawView.invalidate();
+            drawView.requestLayout();
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadFileList(String baseFolderPath) {
         File mPath = new File(baseFolderPath);
+        if (mLoadType == LoadType.SAVE_ALIGNMENT) {
+            mFileList.add("SAVE IN CURRENT DIRECTORY");
+            mFileList.add("CREATE NEW DIRECTORY");
+        }
 
         try {
             mPath.mkdirs();
@@ -458,6 +506,135 @@ public class MainActivity extends ActionBarActivity {
 
     private boolean FileIsData() {
         return !FileIsImage() && !FileIsDir();
+    }
+
+    private void CreateNewDirectory() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Create New Directory");
+
+        // Set an EditText view to get user input
+        final EditText input = new EditText(this);
+        input.setHint("New directory name (please avoid spaces)");
+        alert.setView(input);
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String value = input.getText().toString();
+                if (value.isEmpty() || value.contains(" ")) {
+                    CharSequence text = "Please enter a directory name without any spaces.";
+
+                    Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
+                    toast.show();
+                    CreateNewDirectory();
+                } else {
+                    String newDir = mCurrentDir + value;
+                    if (!newDir.endsWith("/")) {
+                        newDir += "/";
+                    }
+                    File folder = new File(newDir);
+                    boolean success = true;
+                    if (!folder.exists()) {
+                        success = folder.mkdir();
+                    }
+                    if (success) {
+                        Log.i(DEBUG_TAG, "Created directory: " + newDir);
+                        createFileSelectorDialog(mCurrentDir, mLoadType);
+                    } else {
+                        // Do something else on failure
+                        Log.e(DEBUG_TAG, "Unable to create new directory: " + newDir);
+                    }
+                }
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Canceled.
+            }
+        });
+
+        alert.show();
+    }
+
+    boolean doWriteToFile(File file) {
+        boolean success = false;
+        try {
+            success = file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter myOutWriter =
+                    new OutputStreamWriter(fOut);
+            myOutWriter.append(Float.toString(TrajPosX) + " ");
+            myOutWriter.append(Float.toString(TrajPosY) + " ");
+            myOutWriter.append(Float.toString(TrajRot) + " ");
+            myOutWriter.append(Float.toString(TrajScale) + " ");
+            myOutWriter.close();
+            fOut.close();
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        return success;
+    }
+
+    private void SaveCurrentAlignment() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Currently saving in: " + mCurrentDir.replace(Environment.getExternalStorageDirectory().toString(), "/sdcard"));
+
+        // Set an EditText view to get user input
+        final EditText input = new EditText(this);
+        if (mBlueprintFile != null && !mBlueprintFile.isEmpty()) {
+            input.setText(mBlueprintFile.substring(0, mBlueprintFile.lastIndexOf('.')) + "_alignment.txt");
+        }
+        alert.setView(input);
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String value = input.getText().toString();
+                if (value.isEmpty() || value.contains(" ")) {
+                    CharSequence text = "Please enter a file name without any spaces.";
+
+                    Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
+                    toast.show();
+                    SaveCurrentAlignment();
+                } else {
+                    String newFile = mCurrentDir + value;
+
+                    File file = new File(newFile);
+                    boolean success = true;
+                    if (file.exists()) {
+                        String message = "File '" + newFile + "' already exists. Please choose another name.";
+                        Log.e(DEBUG_TAG, message);
+                        Toast.makeText(getBaseContext(), message,
+                                Toast.LENGTH_SHORT).show();
+                        SaveCurrentAlignment();
+                        return;
+                    }
+
+                    doWriteToFile(file);
+                    
+                    if (success) {
+                        Log.i(DEBUG_TAG, "Created alignment file: " + newFile);
+                        Toast.makeText(getBaseContext(),"Created alignment file: " + newFile,
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        // Do something else on failure
+                        Log.e(DEBUG_TAG, "Unable to create new alignment file: " + newFile);
+                    }
+                }
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Canceled.
+            }
+        });
+
+        alert.show();
     }
 
     protected Dialog createFileSelectorDialog(String baseFolderPath, LoadType loadType) {
@@ -510,8 +687,12 @@ public class MainActivity extends ActionBarActivity {
                                 displayTrajData();
                             } else if (FileIsData() && mLoadType == LoadType.LOAD_ALIGNMENT) {
                                 readAlignmentData();
-                            } else if (mLoadType == LoadType.SAVE_ALIGNMENT) {
-                                PrintNotYetImplemented("SaveAlignment");
+                            } else if (mLoadType == LoadType.SAVE_ALIGNMENT && which == 0) {
+                                // selected to save the file in this directory
+                                SaveCurrentAlignment();
+                            } else if (mLoadType == LoadType.SAVE_ALIGNMENT && which == 1) {
+                                // selected to create new directory
+                                CreateNewDirectory();
                             } else if (FileIsDir()) {
                                 Log.i(DEBUG_TAG, "Selected a directory");
                                 dialog.dismiss();
@@ -550,12 +731,12 @@ public class MainActivity extends ActionBarActivity {
         return dialog;
     }
 
-    public void LoadAlignment() {
+    public void LoadAlignment(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.LOAD_ALIGNMENT);
         dialog.show();
     }
 
-    public void SaveAlignment() {
+    public void SaveAlignment(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.SAVE_ALIGNMENT);
         dialog.show();
     }
@@ -591,12 +772,11 @@ public class MainActivity extends ActionBarActivity {
         toast.show();
     }
 
-    public void SelectToggle(View view)
-    {
+    public void SelectToggle(View view) {
 
-        if(mScaleType == ImageView.ScaleType.CENTER) {
+        if (mScaleType == ImageView.ScaleType.CENTER) {
             mScaleType = ImageView.ScaleType.FIT_CENTER;
-        }else {
+        } else {
             mScaleType = ImageView.ScaleType.CENTER;
         }
         blueprintImageView.setScaleType(mScaleType);
@@ -623,7 +803,7 @@ public class MainActivity extends ActionBarActivity {
                         blueprintImageView.setImageResource(android.R.color.transparent);
 
                         Context context = getApplicationContext();
-                        CharSequence text = "The app has been reset";
+                        CharSequence text = "The app has been reset.";
                         int duration = Toast.LENGTH_SHORT;
 
                         Toast toast = Toast.makeText(context, text, duration);
