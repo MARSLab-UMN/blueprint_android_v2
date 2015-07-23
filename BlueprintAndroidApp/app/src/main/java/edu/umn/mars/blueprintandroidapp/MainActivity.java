@@ -9,6 +9,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import android.graphics.Color;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.nfc.Tag;
 
 import android.os.Environment;
@@ -355,10 +357,12 @@ public class MainActivity extends ActionBarActivity {
 
 
     private void readImageData() {
+
         String imageInSD = mCurrentDir + mChosenFile;
         Bitmap bitmap = BitmapFactory.decodeFile(imageInSD);
         try {
             ImageView myImageView = (ImageView) findViewById(R.id.imageview);
+            readDimensions();
             myImageView.setImageBitmap(bitmap);
         } catch (Exception e) {
 
@@ -371,20 +375,21 @@ public class MainActivity extends ActionBarActivity {
     private void readDimensions(){
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
+        options.inJustDecodeBounds = false;              // Dont forget to set to true !!!!
 
         BitmapFactory.decodeFile(mCurrentDir + mChosenFile, options);
         int bwidth = options.outWidth;
-        int bheight = options.outHeight;
-        int actualHeight, actualWidth;
-        int imageViewHeight = blueprintImageView.getHeight(), imageViewWidth = blueprintImageView.getWidth();
-        int bitmapHeight =bheight, bitmapWidth = bwidth;
-        if (imageViewHeight * bitmapWidth <= imageViewWidth * bitmapHeight) {
-            actualWidth = bitmapWidth * imageViewHeight / bitmapHeight;
-            actualHeight = imageViewHeight;
-        } else {
-            actualHeight = bitmapHeight * imageViewWidth / bitmapWidth;
+            int bheight = options.outHeight;
+            int actualHeight, actualWidth;
+            int imageViewHeight = blueprintImageView.getHeight(), imageViewWidth = blueprintImageView.getWidth();
+            int bitmapHeight =bheight, bitmapWidth = bwidth;
+            if (imageViewHeight * bitmapWidth <= imageViewWidth * bitmapHeight) {
+                actualWidth = bitmapWidth * imageViewHeight / bitmapHeight;
+                actualHeight = imageViewHeight;
+            } else {
+                actualHeight = bitmapHeight * imageViewWidth / bitmapWidth;
             actualWidth = imageViewWidth;
+
         }
 
         Log.i(DEBUG_TAG, "It works !");
@@ -395,7 +400,7 @@ public class MainActivity extends ActionBarActivity {
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
 
-        Log.i(DEBUG_TAG,"Bw = "+bwidth+"|Iw = "+imageViewWidth+"|Aw = "+actualWidth);
+        Log.i(DEBUG_TAG,"Bw = "+bwidth+"|Iw = "+imageViewWidth+"|Aw = "+actualWidth+"BH = "+bheight+"|Ih = "+imageViewHeight+"|Aw = "+actualHeight);
 
     }
 
