@@ -552,6 +552,28 @@ public class MainActivity extends ActionBarActivity {
         alert.show();
     }
 
+    boolean doWriteToFile(File file) {
+        boolean success = false;
+        try {
+            success = file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter myOutWriter =
+                    new OutputStreamWriter(fOut);
+            myOutWriter.append(Float.toString(TrajPosX) + " ");
+            myOutWriter.append(Float.toString(TrajPosY) + " ");
+            myOutWriter.append(Float.toString(TrajRot) + " ");
+            myOutWriter.append(Float.toString(TrajScale) + " ");
+            myOutWriter.close();
+            fOut.close();
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        return success;
+    }
+
     private void SaveCurrentAlignment() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
@@ -587,23 +609,8 @@ public class MainActivity extends ActionBarActivity {
                         return;
                     }
 
-                    try {
-                        success = file.createNewFile();
-                        FileOutputStream fOut = new FileOutputStream(file);
-                        OutputStreamWriter myOutWriter =
-                                new OutputStreamWriter(fOut);
-                        myOutWriter.append(Float.toString(TrajPosX) + " ");
-                        myOutWriter.append(Float.toString(TrajPosY) + " ");
-                        myOutWriter.append(Float.toString(TrajRot) + " ");
-                        myOutWriter.append(Float.toString(TrajScale) + " ");
-                        myOutWriter.close();
-                        fOut.close();
-
-                    } catch (Exception e) {
-                        Toast.makeText(getBaseContext(), e.getMessage(),
-                                Toast.LENGTH_SHORT).show();
-                    }
-
+                    doWriteToFile(file);
+                    
                     if (success) {
                         Log.i(DEBUG_TAG, "Created alignment file: " + newFile);
                         Toast.makeText(getBaseContext(),"Created alignment file: " + newFile,
