@@ -394,17 +394,20 @@ public class MainActivity extends ActionBarActivity {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
         }
+     readDimensions();
+    }
+
+    private void readDimensions(){
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
 
-        BitmapFactory.decodeFile(imageInSD, options);
+        BitmapFactory.decodeFile(mCurrentDir + mChosenFile, options);
         int bwidth = options.outWidth;
         int bheight = options.outHeight;
-
-         int actualHeight, actualWidth;
-         int imageViewHeight = blueprintImageView.getHeight(), imageViewWidth = blueprintImageView.getWidth();
-         int bitmapHeight =bheight, bitmapWidth = bwidth;
+        int actualHeight, actualWidth;
+        int imageViewHeight = blueprintImageView.getHeight(), imageViewWidth = blueprintImageView.getWidth();
+        int bitmapHeight =bheight, bitmapWidth = bwidth;
         if (imageViewHeight * bitmapWidth <= imageViewWidth * bitmapHeight) {
             actualWidth = bitmapWidth * imageViewHeight / bitmapHeight;
             actualHeight = imageViewHeight;
@@ -413,10 +416,15 @@ public class MainActivity extends ActionBarActivity {
             actualWidth = imageViewWidth;
         }
 
-        Log.i(DEBUG_TAG,"It works !");
+        Log.i(DEBUG_TAG, "It works !");
+        Context context = getApplicationContext();
+        CharSequence text = "Bw = "+bwidth+"|Iw = "+imageViewWidth+"|Aw = "+actualWidth;
+        int duration = Toast.LENGTH_LONG;
+
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
 
         Log.i(DEBUG_TAG,"Bw = "+bwidth+"|Iw = "+imageViewWidth+"|Aw = "+actualWidth);
-
 
     }
 
@@ -760,6 +768,12 @@ public class MainActivity extends ActionBarActivity {
             mScaleType = ImageView.ScaleType.CENTER;
         }
         blueprintImageView.setScaleType(mScaleType);
+
+        readDimensions();
+
+
+
+
 
     }
 
