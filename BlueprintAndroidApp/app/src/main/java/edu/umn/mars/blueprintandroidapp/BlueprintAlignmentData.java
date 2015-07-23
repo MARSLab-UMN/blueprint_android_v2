@@ -14,6 +14,8 @@ public class BlueprintAlignmentData {
     public float TrajRot;
     public float TrajScale;
 
+    public String BlueprintFileLocation;
+
     BlueprintAlignmentData() {
         ResetAlignmentData();
     }
@@ -23,5 +25,10 @@ public class BlueprintAlignmentData {
         TrajPosX = InitialTrajPosX;
         TrajPosY = InitialTrajPosY;
         TrajRot = InitialTrajRot;
+    }
+
+    void LoadBlueprintFile(String location) {
+        BlueprintFileLocation = location;
+
     }
 }
