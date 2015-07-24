@@ -105,6 +105,7 @@ public class ZHeightDoubleSeekBar extends View {
         canvas.drawRect(getWidth() - thickness, getHeight() - currentUpper, getWidth(), getHeight() - currentLower, barPaint);
 
 
+
         canvas.drawText(String.format("%.3f", getValueAtPercentage(upperPercentOfHeight())), 25, 20, textPaint);
         canvas.drawText(String.format("%.3f", getValueAtPercentage(lowerPercentOfHeight())), 25, getHeight() - 20, textPaint);
     }
