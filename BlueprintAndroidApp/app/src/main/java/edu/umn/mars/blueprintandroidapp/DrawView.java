@@ -74,7 +74,7 @@ public class DrawView extends View {
             // if out of range, repeat the previous or next location so we don't render missing floors
 
             Double x = MainActivity.traj_vertices.get(renderIdx);
-            Double y = MainActivity.traj_vertices.get(renderIdx + 1);
+            Double y = -MainActivity.traj_vertices.get(renderIdx + 1); // negate to rotate around x axis
             Double z = MainActivity.traj_vertices.get(renderIdx + 2);
             if (!(z >= lowerZ && z <= upperZ)) {
                 breakPoint = true;
