@@ -14,7 +14,9 @@ import android.view.View;
  */
 public class ZHeightDoubleSeekBar extends View {
     Paint barPaint = new Paint();
+    Paint outOfRangeBarPaint = new Paint();
     Paint textPaint = new Paint();
+    Paint textStrokePaint = new Paint();
     static final String DEBUG_TAG = "ZHeightDoubleSeekBar";
 
     private boolean isFirstTouch = true;
@@ -28,8 +30,13 @@ public class ZHeightDoubleSeekBar extends View {
     private void init() {
         barPaint.setColor(Color.parseColor("#555aaa"));
         barPaint.setStrokeWidth(3f);
+        outOfRangeBarPaint.setColor(Color.parseColor("#dddddd"));
+        outOfRangeBarPaint.setStrokeWidth(3f);
         textPaint.setColor(Color.BLACK);
         textPaint.setTextSize(20);
+        textStrokePaint.setColor(Color.BLACK);
+        textStrokePaint.setTextSize(30);
+        textStrokePaint.setStyle(Paint.Style.STROKE);
     }
 
     public ZHeightDoubleSeekBar(Context context) {
@@ -102,12 +109,28 @@ public class ZHeightDoubleSeekBar extends View {
             isFirstTouch = false;
         }
 
-        canvas.drawRect(getWidth() - thickness, getHeight() - currentUpper, getWidth(), getHeight() - currentLower, barPaint);
+        float height = getHeight();
+
+        canvas.drawRect(getWidth() - thickness, height - currentUpper, getWidth(), height - currentLower, barPaint);
+
+        int numberBuckets = MainActivity.traj_vertices_buckets.size();
+        float sizePerBucket = getHeight() *1.0f / numberBuckets;
+        for (int i = 0; i < numberBuckets; i++) {
+            float inCurrBucket = MainActivity.traj_vertices_buckets.get(i);
+            if (i*sizePerBucket < currentLower || i*sizePerBucket > currentUpper) {
+                canvas.drawRect((getWidth() - thickness)*(1f-inCurrBucket/MainActivity.MaxBucket), sizePerBucket*(numberBuckets-i-1), getWidth() - thickness, sizePerBucket*(numberBuckets-i), outOfRangeBarPaint);
+            } else {
+                canvas.drawRect((getWidth() - thickness)*(1f-inCurrBucket/MainActivity.MaxBucket), sizePerBucket*(numberBuckets-i-1), getWidth() - thickness, sizePerBucket*(numberBuckets-i), barPaint);
+            }
+
+        }
 
 
-
-        canvas.drawText(String.format("%.3f", getValueAtPercentage(upperPercentOfHeight())), 25, 20, textPaint);
-        canvas.drawText(String.format("%.3f", getValueAtPercentage(lowerPercentOfHeight())), 25, getHeight() - 20, textPaint);
+        int fromEdge = 75;
+//        canvas.drawText(String.format("%.3f", getValueAtPercentage(upperPercentOfHeight())), getWidth() - fromEdge, 20, textStrokePaint);
+//        canvas.drawText(String.format("%.3f", getValueAtPercentage(lowerPercentOfHeight())), getWidth() - fromEdge, getHeight() - 10, textStrokePaint);
+        canvas.drawText(String.format("%.3f", getValueAtPercentage(upperPercentOfHeight())), getWidth() - fromEdge, 20, textPaint);
+        canvas.drawText(String.format("%.3f", getValueAtPercentage(lowerPercentOfHeight())), getWidth() - fromEdge, getHeight() - 10, textPaint);
     }
 
     private float getValueAtPercentage(float percent) {

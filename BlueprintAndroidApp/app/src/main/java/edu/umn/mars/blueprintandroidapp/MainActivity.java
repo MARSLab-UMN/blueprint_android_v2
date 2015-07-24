@@ -52,6 +52,8 @@ public class MainActivity extends ActionBarActivity {
     static public List<Double> traj_vertices = new ArrayList<Double>();
     static public List<Integer> traj_vertices_buckets = new ArrayList<Integer>();
     static public float MaxZ, MinZ;
+    static public int MaxBucket;
+    static final float BucketPrecision = 50;
     static public List<BlueprintAlignmentData> blueprint_data = new ArrayList<BlueprintAlignmentData>();
 
     static int mNumberOfBlueprints;
@@ -464,6 +466,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void readTrajData() {
         traj_vertices.clear();
+        traj_vertices_buckets.clear();
 
         try {
             File myFile = new File(mCurrentDir + mChosenFile);
@@ -492,14 +495,21 @@ public class MainActivity extends ActionBarActivity {
                 count++;
             }
 
-            int numberOfBuckets = Math.round((MainActivity.MaxZ - MainActivity.MinZ) * 100);
+            int numberOfBuckets = (int) Math.floor((MainActivity.MaxZ - MainActivity.MinZ) * BucketPrecision) + 1;
             for (int i = 0; i < numberOfBuckets; i++) {
                 traj_vertices_buckets.add(0);
             }
-
+            MaxBucket = 0;
             for (int i = 2; i < MainActivity.traj_vertices.size(); i+=3) {
-                int bucket = (int)Math.round((traj_vertices.get(i) - MinZ)*100);
-                traj_vertices_buckets.get(bucket) += 1;
+                int bucket = (int) Math.round((traj_vertices.get(i) - MinZ)*BucketPrecision);
+                Log.i(DEBUG_TAG, "Bucket: " + bucket + " value: " + traj_vertices.get(i));
+                traj_vertices_buckets.set(bucket, traj_vertices_buckets.get(bucket) + 1);
+                if (MaxBucket < traj_vertices_buckets.get(bucket)) {
+                    MaxBucket = traj_vertices_buckets.get(bucket);
+                }
+            }
+            for (int i = 0; i < numberOfBuckets; i++) {
+                Log.i(DEBUG_TAG, "BUCKET: " + i + " NUM " + traj_vertices_buckets.get(i));
             }
 
             maxHeightSeekBar.setVisibility(View.VISIBLE);
@@ -902,6 +912,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         ResetAlignmentData();
                         traj_vertices.clear();
+                        traj_vertices_buckets.clear();
                         blueprint_data.clear();
 
                         blueprintImageView.setImageResource(android.R.color.transparent);
