@@ -58,6 +58,7 @@ public class ZHeightDoubleSeekBar extends View {
     public boolean onTouchEvent(MotionEvent e) {
         if (isFirstTouch) {
             currentUpper = getHeight();
+            currentLower = 0;
             isFirstTouch = false;
         }
         // MotionEvent reports input details from the touch screen
@@ -99,6 +100,9 @@ public class ZHeightDoubleSeekBar extends View {
 
         invalidate();
         MainActivity.drawView.invalidate();
+        MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).MinZ = getLowerValue();
+        MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).MaxZ = getUpperValue();
+
 
         return true;
     }
@@ -107,6 +111,7 @@ public class ZHeightDoubleSeekBar extends View {
     public void onDraw(Canvas canvas) {
         if (isFirstTouch) {
             currentUpper = getHeight();
+            currentLower = 0;
             isFirstTouch = false;
         }
 
@@ -152,5 +157,16 @@ public class ZHeightDoubleSeekBar extends View {
 
     public float getLowerValue() {
         return getValueAtPercentage(lowerPercentOfHeight());
+    }
+
+    public void setUpperValue(float value) {
+        currentUpper = (value - MainActivity.MinZ) * getHeight() / (MainActivity.MaxZ - MainActivity.MinZ);
+        Log.i(DEBUG_TAG, "Current upper set to " + currentUpper);
+    }
+
+    public void setLowerValue(float value) {
+        currentLower = (value - MainActivity.MinZ) * getHeight() / (MainActivity.MaxZ - MainActivity.MinZ);
+        Log.i(DEBUG_TAG, "Current lower set to " + currentLower);
+
     }
 }

@@ -153,8 +153,13 @@ public class MainActivity extends ActionBarActivity {
                     Toast.LENGTH_SHORT).show();
         }
 
+        maxHeightSeekBar.setLowerValue(blueprint_data.get(mCurrentBlueprintIdx).MinZ);
+        maxHeightSeekBar.setUpperValue(blueprint_data.get(mCurrentBlueprintIdx).MaxZ);
+
         drawView.invalidate();
         drawView.requestLayout();
+        maxHeightSeekBar.invalidate();
+        maxHeightSeekBar.requestLayout();
     }
 
     void setBlueprintClasses() {
