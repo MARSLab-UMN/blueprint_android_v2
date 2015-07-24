@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -687,6 +688,69 @@ public class MainActivity extends ActionBarActivity {
 
                     myOutWriter.close();
             fOut.close();
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        return success;
+    }
+
+    boolean Load_Config(File file) {
+        int k=mNumberOfBlueprints;
+        String[] ppm = new String[k];
+        String[] theta = new String[k];
+        String[] zrange = new String[k];
+        String[] origin = new String[k];
+        String[] blueprint_file = new String[k];
+
+        boolean success = false;
+        int a,b,c,d,e=0;
+
+        try {
+
+            success = file.createNewFile();
+            Scanner in = new Scanner(file);
+
+
+            while (in.hasNextLine())
+            {
+
+                if(in.equals("px_per_meter_"+a+"_3"))
+                {
+                    ppm[a] =  in.nextFloat();
+                    a++;
+                }
+
+                if(in.equals("theta_"+b+"_3"))
+                {
+                    theta[b] =  in.nextInt();
+                    b++;
+                }
+
+                if(in.equals("z_range_"+c+"_3"))
+                {
+                    zrange[c] =  in.nextInt();
+                    c++;
+                }
+
+                if(in.equals("origin_"+d+"3"))
+                {
+                    origin[d] =  in.nextInt();
+                    d++;
+                }
+
+                if(in.equals("blueprint_file_"+e+"_3"))
+                {
+                    blueprint_file[e] =  in.nextInt();
+                    e++;
+                }
+
+            }
+
+
+            in.close();
 
         } catch (Exception e) {
             Toast.makeText(getBaseContext(), e.getMessage(),
