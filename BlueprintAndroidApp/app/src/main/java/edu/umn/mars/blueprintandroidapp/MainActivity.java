@@ -70,7 +70,7 @@ public class MainActivity extends ActionBarActivity {
 
     // Views
     DrawView drawView;
-    ImageView blueprintImageView;
+    static public ImageView blueprintImageView;
     static public CheckBox lockXCheckBox;
     static public CheckBox lockYCheckBox;
     static public CheckBox lockRotationCheckBox;
@@ -244,41 +244,6 @@ public class MainActivity extends ActionBarActivity {
 //        return super.onOptionsItemSelected(item);
 //    }
 
-    public float GetWidthBlueprintToIVRatio() {
-//        blueprintImageView.requestLayout();
-//        float imageViewWidth = blueprintImageView.getWidth();
-//
-//        Log.i(DEBUG_TAG, "Width is " + imageViewWidth);
-//
-        return 1f;
-    }
-
-    public float GetHeightBlueprintToIVRatio() {
-//        blueprintImageView.invalidate();
-//        blueprintImageView.requestLayout();
-//
-////        float imageViewHeight = blueprintImageView.getHeight();
-////        Log.i(DEBUG_TAG, "Height is " + imageViewHeight);
-////
-////        float[] f = new float[9];
-////        blueprintImageView.getImageMatrix().getValues(f);
-////        final float scaleX = f[blueprintImageView.getMatrix().MSCALE_X];
-////        final float scaleY = f[blueprintImageView.getMatrix().MSCALE_Y];
-////
-////        // Get the drawable (could also get the bitmap behind the drawable and getWidth/getHeight)
-////        final Drawable d = blueprintImageView.getDrawable();
-////        final int origW = d.getIntrinsicWidth();
-////        final int origH = d.getIntrinsicHeight();
-////
-////        // Calculate the actual dimensions
-////        final int actW = Math.round(origW * scaleX);
-////        final int actH = Math.round(origH * scaleY);
-////
-////        Log.e("DBG", "["+origW+","+origH+"] -> ["+actW+","+actH+"] & scales: x="+scaleX+" y="+scaleY);
-//
-        return 1f;
-    }
-
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
@@ -362,8 +327,9 @@ public class MainActivity extends ActionBarActivity {
                 final float y = (y1 + y0) / 2;
 
                 // Calculate the distance moved
-                final float dx = x - mLastTouchX;
-                final float dy = y - mLastTouchY;
+                float trajScale = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale;
+                final float dx = (x - mLastTouchX)*blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsX();
+                final float dy = (y - mLastTouchY)*blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsY();
 
                 if (!lockXCheckBox.isChecked()) {
                     blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX += dx;
@@ -881,10 +847,8 @@ public class MainActivity extends ActionBarActivity {
         blueprintImageView.invalidate();
         blueprintImageView.requestLayout();
 
-        GetWidthBlueprintToIVRatio();
-        GetHeightBlueprintToIVRatio();
-
-        PrintNotYetImplemented("readDimensions");
+        drawView.invalidate();
+        drawView.requestLayout();
     }
 
 

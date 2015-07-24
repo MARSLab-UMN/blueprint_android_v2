@@ -46,21 +46,33 @@ public class DrawView extends View {
 
         double cosVal = Math.cos(MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot);
         double sinVal = Math.sin(MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot);
+        int upperCornerX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getUpperCornerX();
+        int upperCornerY = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getUpperCornerY();
+
+        float trajScale = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale;
+        float blueprintToIVPixelScaleX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsX();
+        float blueprintToIVPixelScaleY = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsY();
 
         for (int i = 0; i < poses.length; i += 2) {
             Double x = MainActivity.traj_vertices.get(3 * i / 2);
             Double y = MainActivity.traj_vertices.get(3 * i / 2 + 1);
             Double z = MainActivity.traj_vertices.get(3 * i / 2 + 2);
 
-            x *= MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale;
-            y *= MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale;
-
             double temp = cosVal * x - sinVal * y;
             y = sinVal * x + cosVal * y;
             x = temp;
+            
+            x *= trajScale;
+            y *= trajScale;
 
             x += MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX;
             y += MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY;
+
+            x /= blueprintToIVPixelScaleX;
+            y /= blueprintToIVPixelScaleY;
+
+            x += upperCornerX;
+            y += upperCornerY;
 
 
             Long Lx = Math.round(x);
