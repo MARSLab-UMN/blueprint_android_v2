@@ -178,18 +178,42 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"  />
 
-    <edu.umn.mars.blueprintandroidapp.ZHeightDoubleSeekBar
+    <LinearLayout
+        android:id="@+id/z_selection_group"
+        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/z_height_seek_bar"
         android:layout_below="@+id/reset_all_button"
         android:layout_alignBottom="@+id/current_blueprint_label"
         android:indeterminate="false"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignLeft="@+id/reset_alignment_button"
-        android:layout_alignStart="@+id/reset_alignment_button" />
+        android:layout_alignStart="@+id/reset_alignment_button">
 
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/lock_max_inf"
+            android:id="@+id/lock_max_inf"
+            android:checked="false"
+            android:onClick="LockMaxHeight"/>
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/lock_min_inf"
+            android:id="@+id/lock_min_inf"
+            android:checked="false"
+            android:onClick="LockMinHeight"/>
+
+        <edu.umn.mars.blueprintandroidapp.ZHeightDoubleSeekBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/z_height_seek_bar" />
+
+
+    </LinearLayout>
 
 
 

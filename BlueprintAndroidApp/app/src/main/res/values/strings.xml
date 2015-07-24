@@ -12,6 +12,8 @@
     <string name="lock_rotation">Lock rotation</string>
     <string name="lock_scale">Lock scaling</string>
     <string name="lock_z_height">Lock Z-axis selection</string>
+    <string name="lock_max_inf">Maximum Height</string>
+    <string name="lock_min_inf">Minimum Height</string>
 
     <!--UI Labels-->
     <string name="current_blueprint_label"></string>

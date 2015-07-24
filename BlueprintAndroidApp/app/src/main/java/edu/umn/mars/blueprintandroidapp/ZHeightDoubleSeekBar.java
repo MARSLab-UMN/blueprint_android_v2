@@ -21,8 +21,8 @@ public class ZHeightDoubleSeekBar extends View {
 
     private boolean isFirstTouch = true;
 
-    double currentMax = 1e10;
-    double currentMin = -1e10;
+    float currentMax = 1e7f;
+    float currentMin = -1e7f;
     float currentLower = 0;
     float currentUpper = 100000f; // will be reset on first touch
     final float thickness = 100;
@@ -61,6 +61,9 @@ public class ZHeightDoubleSeekBar extends View {
             currentLower = 0;
             isFirstTouch = false;
         }
+
+        CheckLocks();
+
         // MotionEvent reports input details from the touch screen
         // and other input controls. In this case, you are only
         // interested in events where the touch position changed.
@@ -86,15 +89,6 @@ public class ZHeightDoubleSeekBar extends View {
                     currentUpper = temp;
                 }
 
-                if (currentLower < 0) {
-                    currentLower = 0;
-                }
-
-                if (currentUpper > getHeight()) {
-                    currentUpper = getHeight();
-                }
-
-
                 break;
         }
 
@@ -114,6 +108,8 @@ public class ZHeightDoubleSeekBar extends View {
             currentLower = 0;
             isFirstTouch = false;
         }
+
+        CheckLocks();
 
         float height = getHeight();
 
@@ -135,8 +131,33 @@ public class ZHeightDoubleSeekBar extends View {
         int fromEdge = 75;
 //        canvas.drawText(String.format("%.3f", getValueAtPercentage(upperPercentOfHeight())), getWidth() - fromEdge, 20, textStrokePaint);
 //        canvas.drawText(String.format("%.3f", getValueAtPercentage(lowerPercentOfHeight())), getWidth() - fromEdge, getHeight() - 10, textStrokePaint);
-        canvas.drawText(String.format("%.3f", getValueAtPercentage(upperPercentOfHeight())), getWidth() - fromEdge, 20, textPaint);
-        canvas.drawText(String.format("%.3f", getValueAtPercentage(lowerPercentOfHeight())), getWidth() - fromEdge, getHeight() - 10, textPaint);
+
+        String minText = String.format("%.3f", getValueAtPercentage(lowerPercentOfHeight()));
+        String maxText = String.format("%.3f", getValueAtPercentage(upperPercentOfHeight()));
+        if (MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).LockMinZ) {
+            minText = "-Inf";
+        }
+
+        if (MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).LockMaxZ) {
+            maxText = "Inf";
+        }
+
+        canvas.drawText(minText, getWidth() - fromEdge, getHeight() - 10, textPaint);
+        canvas.drawText(maxText, getWidth() - fromEdge, 20, textPaint);
+    }
+
+    private void CheckLocks() {
+        if (currentLower < 0 && !MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).LockMinZ) {
+            currentLower = 0;
+        } else if (MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).LockMinZ) {
+            currentLower = currentMin;
+        }
+
+        if (currentUpper > getHeight() && !MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).LockMaxZ) {
+            currentUpper = getHeight();
+        }else if (MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).LockMaxZ) {
+            currentUpper = currentMax;
+        }
     }
 
     private float getValueAtPercentage(float percent) {

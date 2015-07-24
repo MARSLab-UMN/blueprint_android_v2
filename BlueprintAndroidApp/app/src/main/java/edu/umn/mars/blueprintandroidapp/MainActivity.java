@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -80,10 +81,13 @@ public class MainActivity extends ActionBarActivity {
     static public CheckBox lockYCheckBox;
     static public CheckBox lockRotationCheckBox;
     static public CheckBox lockScaleCheckBox;
+    static public CheckBox lockMinZ;
+    static public CheckBox lockMaxZ;
     static public CheckBox lockZCheckBox;
     static public TextView measurementTextView;
     static public TextView currentBlueprintTextView;
     static public ZHeightDoubleSeekBar maxHeightSeekBar;
+    static public LinearLayout zSelectionGroup;
 
     // Alignment parameters and variables
     private int mActivePointerId = MotionEvent.INVALID_POINTER_ID;
@@ -111,10 +115,13 @@ public class MainActivity extends ActionBarActivity {
         lockRotationCheckBox = (CheckBox) findViewById(R.id.lock_rotation);
         lockScaleCheckBox = (CheckBox) findViewById(R.id.lock_scale);
         lockZCheckBox = (CheckBox) findViewById(R.id.lock_z_height);
+        lockMinZ = (CheckBox) findViewById(R.id.lock_min_inf);
+        lockMaxZ = (CheckBox) findViewById(R.id.lock_max_inf);
         drawView = (DrawView) findViewById(R.id.draw_view);
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
         maxHeightSeekBar = (ZHeightDoubleSeekBar) findViewById(R.id.z_height_seek_bar);
-        maxHeightSeekBar.setVisibility(View.INVISIBLE);
+        zSelectionGroup = (LinearLayout) findViewById(R.id.z_selection_group);
+        zSelectionGroup.setVisibility(View.INVISIBLE);
         blueprintImageView.setScaleType(mScaleType);
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
         requestNumberOfBlueprints();
@@ -513,7 +520,7 @@ public class MainActivity extends ActionBarActivity {
                 }
             }
 
-            maxHeightSeekBar.setVisibility(View.VISIBLE);
+            zSelectionGroup.setVisibility(View.VISIBLE);
             maxHeightSeekBar.invalidate();
             maxHeightSeekBar.requestLayout();
         } catch (Exception e) {
@@ -864,10 +871,22 @@ public class MainActivity extends ActionBarActivity {
 
     public void ToggleZSelection (View view) {
         if (lockZCheckBox.isChecked() || traj_vertices.isEmpty()) {
-            maxHeightSeekBar.setVisibility(View.INVISIBLE);
+            zSelectionGroup.setVisibility(View.INVISIBLE);
         } else {
-            maxHeightSeekBar.setVisibility(View.VISIBLE);
+            zSelectionGroup.setVisibility(View.VISIBLE);
         }
+    }
+
+    public void LockMaxHeight(View view) {
+        blueprint_data.get(mCurrentBlueprintIdx).LockMaxZ = lockMaxZ.isChecked();;
+        maxHeightSeekBar.invalidate();
+        maxHeightSeekBar.requestLayout();
+    }
+
+    public void LockMinHeight(View view) {
+        blueprint_data.get(mCurrentBlueprintIdx).LockMinZ = lockMinZ.isChecked();;
+        maxHeightSeekBar.invalidate();
+        maxHeightSeekBar.requestLayout();
     }
 
     public void ResetAlignmentData() {

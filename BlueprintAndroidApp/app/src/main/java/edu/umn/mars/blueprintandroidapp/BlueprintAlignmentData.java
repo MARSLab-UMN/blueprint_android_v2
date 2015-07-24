@@ -22,6 +22,8 @@ public class BlueprintAlignmentData {
     public float TrajScale;
     public float MinZ = -1e6f;
     public float MaxZ = 1e6f;
+    public boolean LockMaxZ = false;
+    public boolean LockMinZ = false;
 
     public String blueprintFileLocation;
     public Bitmap imageBitmap;
