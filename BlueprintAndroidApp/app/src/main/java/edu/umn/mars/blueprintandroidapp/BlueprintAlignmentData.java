@@ -13,11 +13,11 @@ import java.util.Deque;
  * Created by mars on 7/23/15.
  */
 public class BlueprintAlignmentData {
-    static final float InitialTrajPosX = 0;
-    static final float InitialTrajPosY = 0;
-    static final float InitialTrajRot = 0;
-    static final float InitialTrajScale = 10.0f;
-    static final float BaseRotation = 0*(-(float) Math.PI/2); // to make positive y direction up
+    static float InitialTrajPosX = 0;
+    static float InitialTrajPosY = 0;
+    static float InitialTrajRot = 0;
+    static float InitialTrajScale = 10.0f;
+    static final float BaseRotation = 0; // unused currently
 
     public float TrajPosX;
     public float TrajPosY;
@@ -80,6 +80,10 @@ public class BlueprintAlignmentData {
 
         startBitmapX_FITCENTER = Math.round(iv.getWidth() / 2f - (bitmapWidth / blueprintToImageViewPixels_FITCENTER) / 2f);
         startBitmapY_FITCENTER = Math.round(iv.getHeight() / 2f - (bitmapHeight / blueprintToImageViewPixels_FITCENTER) / 2f);
+
+        InitialTrajPosX = bitmapWidth/2f;
+        InitialTrajPosY = bitmapHeight/2f;
+        ResetAlignmentData();
     }
 
 

@@ -754,7 +754,7 @@ public class MainActivity extends ActionBarActivity {
 
         // Set an EditText view to get user input
         final EditText input = new EditText(this);
-//        input.setText(mBlueprintFile.substring(0, mBlueprintFile.lastIndexOf('.')) + "_alignment.txt");
+        input.setText(".txt");
 
         alert.setView(input);
 
