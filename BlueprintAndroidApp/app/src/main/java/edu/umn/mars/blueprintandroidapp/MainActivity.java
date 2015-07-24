@@ -163,6 +163,9 @@ public class MainActivity extends ActionBarActivity {
         maxHeightSeekBar.setLowerValue(blueprint_data.get(mCurrentBlueprintIdx).MinZ);
         maxHeightSeekBar.setUpperValue(blueprint_data.get(mCurrentBlueprintIdx).MaxZ);
 
+        lockMinZ.setChecked(blueprint_data.get(mCurrentBlueprintIdx).LockMinZ);
+        lockMaxZ.setChecked(blueprint_data.get(mCurrentBlueprintIdx).LockMaxZ);
+
         drawView.invalidate();
         drawView.requestLayout();
         maxHeightSeekBar.invalidate();
@@ -881,12 +884,16 @@ public class MainActivity extends ActionBarActivity {
         blueprint_data.get(mCurrentBlueprintIdx).LockMaxZ = lockMaxZ.isChecked();;
         maxHeightSeekBar.invalidate();
         maxHeightSeekBar.requestLayout();
+        drawView.invalidate();
+        drawView.requestLayout();
     }
 
     public void LockMinHeight(View view) {
         blueprint_data.get(mCurrentBlueprintIdx).LockMinZ = lockMinZ.isChecked();;
         maxHeightSeekBar.invalidate();
         maxHeightSeekBar.requestLayout();
+        drawView.invalidate();
+        drawView.requestLayout();
     }
 
     public void ResetAlignmentData() {

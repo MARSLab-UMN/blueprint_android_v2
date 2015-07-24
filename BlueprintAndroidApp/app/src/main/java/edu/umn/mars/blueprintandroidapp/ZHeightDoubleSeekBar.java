@@ -173,10 +173,12 @@ public class ZHeightDoubleSeekBar extends View {
     }
 
     public float getUpperValue() {
+        CheckLocks();
         return getValueAtPercentage(upperPercentOfHeight());
     }
 
     public float getLowerValue() {
+        CheckLocks();
         return getValueAtPercentage(lowerPercentOfHeight());
     }
 
