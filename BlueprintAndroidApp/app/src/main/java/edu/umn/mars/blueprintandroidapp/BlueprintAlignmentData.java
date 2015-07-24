@@ -105,4 +105,28 @@ public class BlueprintAlignmentData {
     public float getBlueprintToImageViewPixelsY() {
         return ReturnFirstOrSecondForType(blueprintToImageViewPixels_FITCENTER, blueprintToImageViewPixelsY_FITXY);
     }
+
+    public String createConfigFileString(int i) {
+        String maxZString = Float.toString(MaxZ), minZString = Float.toString(MinZ);
+        if (LockMaxZ) {
+            maxZString = "1e10";
+        }
+
+        if (LockMinZ) {
+            minZString = "-1e10";
+        }
+        String zHeightString = "[" + minZString + ", " + maxZString + "]";
+
+        String blueprint_portion = "";
+        blueprint_portion +="### floor " + (i+1)+System.getProperty("line.separator");
+        blueprint_portion += "  px_per_meter_"+i+"_3 = " + Float.toString(TrajScale)+ System.getProperty("line.separator");
+        blueprint_portion += "  theta_"+i+"_3 = " + Float.toString(TrajRot) +  System.getProperty("line.separator");
+        blueprint_portion += "  z_range_"+i+"_3 = " + zHeightString + System.getProperty("line.separator");
+        blueprint_portion += "  origin_"+i+"_3 = [" + Integer.toString(Math.round(TrajPosX)) + ", " + Integer.toString(Math.round(TrajPosY)) + "]" + System.getProperty("line.separator");
+        blueprint_portion += "  blueprint_file_"+i+"_3 = " + blueprintFileLocation + System.getProperty("line.separator");
+
+        blueprint_portion +=System.getProperty("line.separator");
+
+        return blueprint_portion;
+    }
 }

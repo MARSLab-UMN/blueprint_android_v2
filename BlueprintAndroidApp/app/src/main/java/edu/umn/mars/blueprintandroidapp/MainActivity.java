@@ -64,7 +64,6 @@ public class MainActivity extends ActionBarActivity {
     static final int state_vec_size = 16;
     private String mChosenFile;
     private String mCurrentDir;
-    private String mBlueprintFile;
     public static int mCurrentBlueprintIdx;
     private LoadType mLoadType;
     private static final String FTYPE = ".txt";
@@ -698,19 +697,7 @@ public class MainActivity extends ActionBarActivity {
             String blueprint_portion = "renderable_3 = blueprint" + System.getProperty("line.separator");
             blueprint_portion += "floors_3 = "+ mNumberOfBlueprints+ System.getProperty("line.separator");
             for (int i = 0; i < mNumberOfBlueprints; i++) {
-                blueprint_portion +="### floor " + (i+1)+System.getProperty("line.separator");
-                blueprint_portion += "px_per_meter_"+i+"_3 = " + Float.toString(blueprint_data.get(i).TrajPosX)+ System.getProperty("line.separator");
-                blueprint_portion += "theta_"+i+"_3 = " + Float.toString(blueprint_data.get(i).TrajPosX) + System.getProperty("line.separator");
-                blueprint_portion += "z_range_"+i+"_3 = " + Float.toString(blueprint_data.get(i).TrajPosY) + System.getProperty("line.separator");
-                blueprint_portion += "origin_"+i+"_3 = " + Float.toString(blueprint_data.get(i).TrajRot) + System.getProperty("line.separator");
-                blueprint_portion += "blueprint_file_"+i+"_3 = " +Float.toString(blueprint_data.get(i).TrajScale)+ System.getProperty("line.separator");
-
-               /* blueprint_portion += Float.toString(blueprint_data.get(i).TrajPosX) + System.getProperty("line.separator") ;
-                blueprint_portion += Float.toString(blueprint_data.get(i).TrajPosY) + System.getProperty("line.separator") ;
-                blueprint_portion += Float.toString(blueprint_data.get(i).TrajRot) + System.getProperty("line.separator") ;
-                blueprint_portion += Float.toString(blueprint_data.get(i).TrajScale) + System.getProperty("line.separator") ;
-                */
-                blueprint_portion +=System.getProperty("line.separator");
+                blueprint_portion += blueprint_data.get(i).createConfigFileString(i);
             }
 
             String closing_portion = "size_3 = [1920, 1080]" +System.getProperty("line.separator") +
@@ -745,9 +732,8 @@ public class MainActivity extends ActionBarActivity {
 
         // Set an EditText view to get user input
         final EditText input = new EditText(this);
-        if (mBlueprintFile != null && !mBlueprintFile.isEmpty()) {
-            input.setText(mBlueprintFile.substring(0, mBlueprintFile.lastIndexOf('.')) + "_alignment.txt");
-        }
+//        input.setText(mBlueprintFile.substring(0, mBlueprintFile.lastIndexOf('.')) + "_alignment.txt");
+
         alert.setView(input);
 
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
