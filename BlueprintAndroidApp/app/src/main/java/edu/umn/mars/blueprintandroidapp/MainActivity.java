@@ -27,7 +27,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +51,10 @@ import java.util.Scanner;
 public class MainActivity extends ActionBarActivity {
     //In an Activity
     static public List<Double> traj_vertices = new ArrayList<Double>();
+    static public List<Integer> traj_vertices_buckets = new ArrayList<Integer>();
+    static public float MaxZ, MinZ;
+    static public int MaxBucket;
+    static final float BucketPrecision = 50;
     static public List<BlueprintAlignmentData> blueprint_data = new ArrayList<BlueprintAlignmentData>();
 
     static int mNumberOfBlueprints;
@@ -69,14 +75,19 @@ public class MainActivity extends ActionBarActivity {
 
 
     // Views
-    DrawView drawView;
-    ImageView blueprintImageView;
+    static public DrawView drawView;
+    static public ImageView blueprintImageView;
     static public CheckBox lockXCheckBox;
     static public CheckBox lockYCheckBox;
     static public CheckBox lockRotationCheckBox;
     static public CheckBox lockScaleCheckBox;
+    static public CheckBox lockMinZ;
+    static public CheckBox lockMaxZ;
+    static public CheckBox lockZCheckBox;
     static public TextView measurementTextView;
     static public TextView currentBlueprintTextView;
+    static public ZHeightDoubleSeekBar maxHeightSeekBar;
+    static public LinearLayout zSelectionGroup;
 
     // Alignment parameters and variables
     private int mActivePointerId = MotionEvent.INVALID_POINTER_ID;
@@ -103,8 +114,14 @@ public class MainActivity extends ActionBarActivity {
         lockYCheckBox = (CheckBox) findViewById(R.id.lock_y);
         lockRotationCheckBox = (CheckBox) findViewById(R.id.lock_rotation);
         lockScaleCheckBox = (CheckBox) findViewById(R.id.lock_scale);
+        lockZCheckBox = (CheckBox) findViewById(R.id.lock_z_height);
+        lockMinZ = (CheckBox) findViewById(R.id.lock_min_inf);
+        lockMaxZ = (CheckBox) findViewById(R.id.lock_max_inf);
         drawView = (DrawView) findViewById(R.id.draw_view);
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
+        maxHeightSeekBar = (ZHeightDoubleSeekBar) findViewById(R.id.z_height_seek_bar);
+        zSelectionGroup = (LinearLayout) findViewById(R.id.z_selection_group);
+        zSelectionGroup.setVisibility(View.INVISIBLE);
         blueprintImageView.setScaleType(mScaleType);
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
         requestNumberOfBlueprints();
@@ -143,8 +160,16 @@ public class MainActivity extends ActionBarActivity {
                     Toast.LENGTH_SHORT).show();
         }
 
+        maxHeightSeekBar.setLowerValue(blueprint_data.get(mCurrentBlueprintIdx).MinZ);
+        maxHeightSeekBar.setUpperValue(blueprint_data.get(mCurrentBlueprintIdx).MaxZ);
+
+        lockMinZ.setChecked(blueprint_data.get(mCurrentBlueprintIdx).LockMinZ);
+        lockMaxZ.setChecked(blueprint_data.get(mCurrentBlueprintIdx).LockMaxZ);
+
         drawView.invalidate();
         drawView.requestLayout();
+        maxHeightSeekBar.invalidate();
+        maxHeightSeekBar.requestLayout();
     }
 
     void setBlueprintClasses() {
@@ -244,21 +269,6 @@ public class MainActivity extends ActionBarActivity {
 //        return super.onOptionsItemSelected(item);
 //    }
 
-//    public float GetWidthBlueprintToIVRatio() {
-//        float imageViewWidth = blueprintImageView.getWidth();
-//
-//        Log.i(DEBUG_TAG, "Width is "+imageViewWidth);
-//
-//        return 1f;
-//    }
-//
-//    public float GetHeightBlueprintToIVRatio() {
-//        float imageViewHeight = blueprintImageView.getHeight();
-//        Log.i(DEBUG_TAG, "Height is "+imageViewHeight);
-//
-//        return 1f;
-//    }
-
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
@@ -342,8 +352,9 @@ public class MainActivity extends ActionBarActivity {
                 final float y = (y1 + y0) / 2;
 
                 // Calculate the distance moved
-                final float dx = x - mLastTouchX;
-                final float dy = y - mLastTouchY;
+                float trajScale = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale;
+                final float dx = (x - mLastTouchX)*blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsX();
+                final float dy = (y - mLastTouchY)*blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsY();
 
                 if (!lockXCheckBox.isChecked()) {
                     blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX += dx;
@@ -470,6 +481,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void readTrajData() {
         traj_vertices.clear();
+        traj_vertices_buckets.clear();
 
         try {
             File myFile = new File(mCurrentDir + mChosenFile);
@@ -478,12 +490,42 @@ public class MainActivity extends ActionBarActivity {
             int count = 0;
             while (scan.hasNextDouble()) {
                 if (count % state_vec_size == 13 || count % state_vec_size == 14 || count % state_vec_size == 15) {
-                    traj_vertices.add(scan.nextDouble());
+                    double d = scan.nextDouble();
+                    traj_vertices.add(d);
+                    if (count == 15) {
+                        MaxZ = (float) d;
+                        MinZ = (float) d;
+                    }
+                    if (count % state_vec_size == 15) {
+                        if (MaxZ < d) {
+                            MaxZ = (float) d;
+                        }
+                        if (MinZ > d) {
+                            MinZ = (float) d;
+                        }
+                    }
                 } else {
                     scan.nextDouble();
                 }
                 count++;
             }
+
+            int numberOfBuckets = (int) Math.ceil((MainActivity.MaxZ - MainActivity.MinZ) * BucketPrecision) + 1;
+            for (int i = 0; i < numberOfBuckets; i++) {
+                traj_vertices_buckets.add(0);
+            }
+            MaxBucket = 0;
+            for (int i = 2; i < MainActivity.traj_vertices.size(); i+=3) {
+                int bucket = (int) Math.ceil((traj_vertices.get(i) - MinZ) * BucketPrecision);
+                traj_vertices_buckets.set(bucket, traj_vertices_buckets.get(bucket) + 1);
+                if (MaxBucket < traj_vertices_buckets.get(bucket)) {
+                    MaxBucket = traj_vertices_buckets.get(bucket);
+                }
+            }
+
+            zSelectionGroup.setVisibility(View.VISIBLE);
+            maxHeightSeekBar.invalidate();
+            maxHeightSeekBar.requestLayout();
         } catch (Exception e) {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
@@ -797,7 +839,7 @@ public class MainActivity extends ActionBarActivity {
 
                             if (FileIsImage() && mLoadType == LoadType.BLUEPRINT) {
                                 Log.i(DEBUG_TAG, "You have selected an image.");
-                                blueprint_data.get(mCurrentBlueprintIdx).LoadBlueprintFile(mCurrentDir + mChosenFile);
+                                blueprint_data.get(mCurrentBlueprintIdx).LoadBlueprintFile(mCurrentDir + mChosenFile, blueprintImageView);
                                 GoToBlueprintAtIdx(mCurrentBlueprintIdx);
                             } else if (FileIsData() && mLoadType == LoadType.TRAJECTORY) {
                                 Log.i(DEBUG_TAG, "You have selected a trajectory data file.");
@@ -864,7 +906,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void PreviousBlueprint(View view) {
-            GoToBlueprintAtIdx(mCurrentBlueprintIdx-1);
+            GoToBlueprintAtIdx(mCurrentBlueprintIdx - 1);
     }
 
     public void SelectTrajectory(View view) {
@@ -875,6 +917,30 @@ public class MainActivity extends ActionBarActivity {
     public void SelectBlueprint(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.BLUEPRINT);
         dialog.show();
+    }
+
+    public void ToggleZSelection (View view) {
+        if (lockZCheckBox.isChecked() || traj_vertices.isEmpty()) {
+            zSelectionGroup.setVisibility(View.INVISIBLE);
+        } else {
+            zSelectionGroup.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void LockMaxHeight(View view) {
+        blueprint_data.get(mCurrentBlueprintIdx).LockMaxZ = lockMaxZ.isChecked();;
+        maxHeightSeekBar.invalidate();
+        maxHeightSeekBar.requestLayout();
+        drawView.invalidate();
+        drawView.requestLayout();
+    }
+
+    public void LockMinHeight(View view) {
+        blueprint_data.get(mCurrentBlueprintIdx).LockMinZ = lockMinZ.isChecked();;
+        maxHeightSeekBar.invalidate();
+        maxHeightSeekBar.requestLayout();
+        drawView.invalidate();
+        drawView.requestLayout();
     }
 
     public void ResetAlignmentData() {
@@ -896,14 +962,20 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void SelectToggle(View view) {
-        if (mScaleType == ImageView.ScaleType.CENTER) {
+        // if you change these, you will likely have to change how the scale is calculated
+        // We assume it fills the parent
+        if (mScaleType == ImageView.ScaleType.FIT_XY) {
             mScaleType = ImageView.ScaleType.FIT_CENTER;
         } else {
-            mScaleType = ImageView.ScaleType.CENTER;
+            mScaleType = ImageView.ScaleType.FIT_XY;
         }
         blueprintImageView.setScaleType(mScaleType);
 
-        PrintNotYetImplemented("readDimensions");
+        blueprintImageView.invalidate();
+        blueprintImageView.requestLayout();
+
+        drawView.invalidate();
+        drawView.requestLayout();
     }
 
 
@@ -916,6 +988,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         ResetAlignmentData();
                         traj_vertices.clear();
+                        traj_vertices_buckets.clear();
                         blueprint_data.clear();
 
                         blueprintImageView.setImageResource(android.R.color.transparent);

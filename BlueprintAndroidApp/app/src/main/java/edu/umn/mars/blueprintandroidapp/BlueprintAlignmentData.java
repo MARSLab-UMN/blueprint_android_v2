@@ -14,17 +14,32 @@ public class BlueprintAlignmentData {
     static final float InitialTrajPosX = 0;
     static final float InitialTrajPosY = 0;
     static final float InitialTrajRot = 0;
-    static final float InitialTrajScale = 100.0f;
+    static final float InitialTrajScale = 10.0f;
 
     public float TrajPosX;
     public float TrajPosY;
     public float TrajRot;
     public float TrajScale;
+    public float MinZ = -1e6f;
+    public float MaxZ = 1e6f;
+    public boolean LockMaxZ = false;
+    public boolean LockMinZ = false;
 
     public String blueprintFileLocation;
     public Bitmap imageBitmap;
     public int bitmapHeight;
     public int bitmapWidth;
+
+    private int startBitmapX_FITCENTER;
+    private int startBitmapY_FITCENTER;
+    private final int startBitmapX_FITXY = 0; // for completeness
+    private final int startBitmapY_FITXY = 0; // for completeness
+
+
+    private float blueprintToImageViewPixels_FITCENTER;
+    private float blueprintToImageViewPixelsX_FITXY;
+    private float blueprintToImageViewPixelsY_FITXY;
+
 
     BlueprintAlignmentData() {
         ResetAlignmentData();
@@ -37,7 +52,7 @@ public class BlueprintAlignmentData {
         TrajRot = InitialTrajRot;
     }
 
-    void LoadBlueprintFile(String location) {
+    void LoadBlueprintFile(String location, ImageView iv) {
         blueprintFileLocation = location;
 
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -47,32 +62,47 @@ public class BlueprintAlignmentData {
         bitmapWidth = options.outWidth;
         bitmapHeight = options.outHeight;
 
-        Log.i(MainActivity.DEBUG_TAG,"Bw = "+bitmapWidth+"|Iw = "+"BH = "+bitmapHeight);
+        blueprintToImageViewPixelsX_FITXY = bitmapWidth * 1f / iv.getWidth();
+        blueprintToImageViewPixelsY_FITXY = bitmapHeight * 1f / iv.getHeight();
+
+        if (bitmapWidth*1f/bitmapHeight > iv.getWidth()*1f/iv.getHeight()) {
+            blueprintToImageViewPixels_FITCENTER = blueprintToImageViewPixelsX_FITXY;
+        } else {
+            blueprintToImageViewPixels_FITCENTER = blueprintToImageViewPixelsY_FITXY;
+        }
+
+        Log.i(MainActivity.DEBUG_TAG, "Dimensions of image: " + bitmapWidth + " " + bitmapHeight);
+        Log.i(MainActivity.DEBUG_TAG,blueprintToImageViewPixelsX_FITXY + " " + blueprintToImageViewPixelsY_FITXY + " " + blueprintToImageViewPixels_FITCENTER);
+
+        startBitmapX_FITCENTER = Math.round(iv.getWidth() / 2f - (bitmapWidth / blueprintToImageViewPixels_FITCENTER) / 2f);
+        startBitmapY_FITCENTER = Math.round(iv.getHeight() / 2f - (bitmapHeight / blueprintToImageViewPixels_FITCENTER) / 2f);
     }
 
 
-    private void readDimensions(){
-//        int actualHeight, actualWidth;
-//        int imageViewHeight = blueprintImageView.getHeight(), imageViewWidth = blueprintImageView.getWidth();
-//        int bitmapHeight =bheight, bitmapWidth = bwidth;
-//        if (imageViewHeight * bitmapWidth <= imageViewWidth * bitmapHeight) {
-//            actualWidth = bitmapWidth * imageViewHeight / bitmapHeight;
-//            actualHeight = imageViewHeight;
-//        } else {
-//            actualHeight = bitmapHeight * imageViewWidth / bitmapWidth;
-//            actualWidth = imageViewWidth;
-//
-//        }
-//
-//        Log.i(DEBUG_TAG, "It works !");
-//        Context context = getApplicationContext();
-//        CharSequence text = "Bw = "+bwidth+"|Iw = "+imageViewWidth+"|Aw = "+actualWidth;
-//        int duration = Toast.LENGTH_LONG;
-//
-//        Toast toast = Toast.makeText(context, text, duration);
-//        toast.show();
-//
-//        Log.i(DEBUG_TAG,"Bw = "+bwidth+"|Iw = "+imageViewWidth+"|Aw = "+actualWidth+"BH = "+bheight+"|Ih = "+imageViewHeight+"|Aw = "+actualHeight);
+    private <T> T ReturnFirstOrSecondForType(T fitcenter, T fitxy) {
+        if (MainActivity.blueprintImageView.getScaleType() == ImageView.ScaleType.FIT_CENTER) {
+            return fitcenter;
+        } else if (MainActivity.blueprintImageView.getScaleType() == ImageView.ScaleType.FIT_XY) {
+            return fitxy;
+        } else {
+            Log.e(MainActivity.DEBUG_TAG, "This should never be reached. Incorrect ImageView type used.");
+            return (T) null;
+        }
+    }
 
+    public int getUpperCornerX() {
+        return ReturnFirstOrSecondForType(startBitmapX_FITCENTER, startBitmapX_FITXY);
+    }
+
+    public int getUpperCornerY() {
+        return ReturnFirstOrSecondForType(startBitmapY_FITCENTER, startBitmapY_FITXY);
+    }
+
+    public float getBlueprintToImageViewPixelsX() {
+        return ReturnFirstOrSecondForType(blueprintToImageViewPixels_FITCENTER, blueprintToImageViewPixelsX_FITXY);
+    }
+
+    public float getBlueprintToImageViewPixelsY() {
+        return ReturnFirstOrSecondForType(blueprintToImageViewPixels_FITCENTER, blueprintToImageViewPixelsY_FITXY);
     }
 }
