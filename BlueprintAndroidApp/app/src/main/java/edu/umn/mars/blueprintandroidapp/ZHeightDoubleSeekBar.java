@@ -97,6 +97,10 @@ public class ZHeightDoubleSeekBar extends View {
         MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).MinZ = getLowerValue();
         MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).MaxZ = getUpperValue();
 
+        if (MainActivity.mCurrentBlueprintIdx + 1 < MainActivity.blueprint_data.size() && MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx+1).UnsetMinZ) {
+            MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx+1).MinZ = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).MaxZ;
+        }
+
 
         return true;
     }
@@ -107,6 +111,10 @@ public class ZHeightDoubleSeekBar extends View {
             currentUpper = getHeight();
             currentLower = 0;
             isFirstTouch = false;
+        }
+
+        if (MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).UnsetMinZ) {
+            MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).UnsetMinZ = false;
         }
 
         CheckLocks();

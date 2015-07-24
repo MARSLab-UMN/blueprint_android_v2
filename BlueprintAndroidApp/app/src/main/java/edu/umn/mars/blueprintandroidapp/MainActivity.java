@@ -429,7 +429,7 @@ public class MainActivity extends ActionBarActivity {
                 final float x = MotionEventCompat.getX(event, pointerIndex);
 
                 // Calculate the distance moved
-                final float dx = x - mLastRot;
+                final float dx = (x - mLastRot)/5f;
 
                 if (!lockRotationCheckBox.isChecked()) {
 

@@ -17,6 +17,7 @@ public class BlueprintAlignmentData {
     static final float InitialTrajPosY = 0;
     static final float InitialTrajRot = 0;
     static final float InitialTrajScale = 10.0f;
+    static final float BaseRotation = -(float) Math.PI/2; // to make positive y direction up
 
     public float TrajPosX;
     public float TrajPosY;
@@ -26,6 +27,7 @@ public class BlueprintAlignmentData {
     public float MaxZ = 1e6f;
     public boolean LockMaxZ = false;
     public boolean LockMinZ = false;
+    public boolean UnsetMinZ = true;
 
     public String blueprintFileLocation;
     public Bitmap imageBitmap;
