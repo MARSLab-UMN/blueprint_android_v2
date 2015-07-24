@@ -192,12 +192,9 @@ public class ZHeightDoubleSeekBar extends View {
 
     public void setUpperValue(float value) {
         currentUpper = (value - MainActivity.MinZ) * getHeight() / (MainActivity.MaxZ - MainActivity.MinZ);
-        Log.i(DEBUG_TAG, "Current upper set to " + currentUpper);
     }
 
     public void setLowerValue(float value) {
         currentLower = (value - MainActivity.MinZ) * getHeight() / (MainActivity.MaxZ - MainActivity.MinZ);
-        Log.i(DEBUG_TAG, "Current lower set to " + currentLower);
-
     }
 }

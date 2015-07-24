@@ -58,6 +58,7 @@ public class DrawView extends View {
 
         float trajRot = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).BaseRotation;
         trajRot += MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot;
+        trajRot *= -1; // invert since rotating around x
         double cosVal = Math.cos(trajRot);
         double sinVal = Math.sin(trajRot);
         int upperCornerX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getUpperCornerX();
@@ -125,7 +126,7 @@ public class DrawView extends View {
             String measStr = "";
             measStr += "Translate X: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX + ", ";
             measStr += "Translate Y: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY + ", ";
-            measStr += "Rotation: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot*180/Math.PI + ", ";
+            measStr += "Rotation: " + (int)Math.round(MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot*180/Math.PI) + ", ";
             measStr += "Scale: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale + "";
             MainActivity.measurementTextView.setText(measStr);
         } else {

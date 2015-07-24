@@ -17,7 +17,7 @@ public class BlueprintAlignmentData {
     static final float InitialTrajPosY = 0;
     static final float InitialTrajRot = 0;
     static final float InitialTrajScale = 10.0f;
-    static final float BaseRotation = -(float) Math.PI/2; // to make positive y direction up
+    static final float BaseRotation = 0*(-(float) Math.PI/2); // to make positive y direction up
 
     public float TrajPosX;
     public float TrajPosY;
