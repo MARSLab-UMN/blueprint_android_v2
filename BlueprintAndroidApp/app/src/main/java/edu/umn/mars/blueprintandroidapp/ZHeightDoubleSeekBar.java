@@ -13,9 +13,9 @@ import android.view.View;
  * Created by mars on 7/23/15.
  */
 public class ZHeightDoubleSeekBar extends View {
-    Paint paint = new Paint();
+    Paint barPaint = new Paint();
+    Paint textPaint = new Paint();
     static final String DEBUG_TAG = "ZHeightDoubleSeekBar";
-    private float mPreviousX, mPreviousY;
 
     private boolean isFirstTouch = true;
 
@@ -26,8 +26,10 @@ public class ZHeightDoubleSeekBar extends View {
     final float thickness = 100;
 
     private void init() {
-        paint.setColor(Color.parseColor("#555aaa"));
-        paint.setStrokeWidth(3f);
+        barPaint.setColor(Color.parseColor("#555aaa"));
+        barPaint.setStrokeWidth(3f);
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize(20);
     }
 
     public ZHeightDoubleSeekBar(Context context) {
@@ -70,30 +72,24 @@ public class ZHeightDoubleSeekBar extends View {
                     currentLower = increasingY;
                 }
 
-                if (currentLower <= 0) {
+                if (currentLower > currentUpper) {
+                    float temp = currentLower;
+                    currentLower = currentUpper;
+                    currentUpper = temp;
+                }
+
+                if (currentLower < 0) {
                     currentLower = 0;
                 }
 
-                break;
+                if (currentUpper > getHeight()) {
+                    currentUpper = getHeight();
+                }
 
-//                float dx = x - mPreviousX;
-//                float dy = y - mPreviousY;
-//
-//                // reverse direction of rotation above the mid-line
-//                if (y > getHeight() / 2) {
-//                    dx = dx * -1 ;
-//                }
-//
-//                // reverse direction of rotation to left of the mid-line
-//                if (x < getWidth() / 2) {
-//                    dy = dy * -1 ;
-//                }
+
+                break;
         }
 
-//        mPreviousX = x;
-//        mPreviousY = y;
-
-        Log.i(DEBUG_TAG, x + " " + y);
         invalidate();
 
         return true;
@@ -101,7 +97,27 @@ public class ZHeightDoubleSeekBar extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-        Log.e(DEBUG_TAG, "upper: " + (getHeight() - currentUpper) + " lower: " + (getHeight() - currentLower));
-        canvas.drawRect(getWidth() - thickness, getHeight() - currentUpper, getWidth(), getHeight() - currentLower, paint);
+        if (isFirstTouch) {
+            currentUpper = getHeight();
+            isFirstTouch = false;
+        }
+
+        canvas.drawRect(getWidth() - thickness, getHeight() - currentUpper, getWidth(), getHeight() - currentLower, barPaint);
+
+
+        canvas.drawText(String.format("%.3f", getValueAtPercentage(upperPercentOfHeight())), 25, 20, textPaint);
+        canvas.drawText(String.format("%.3f", getValueAtPercentage(lowerPercentOfHeight())), 25, getHeight() - 20, textPaint);
+    }
+
+    private float getValueAtPercentage(float percent) {
+        return percent * (MainActivity.MaxZ - MainActivity.MinZ) + MainActivity.MinZ;
+    }
+
+    private float lowerPercentOfHeight() {
+        return currentLower / getHeight();
+    }
+
+    private float upperPercentOfHeight() {
+        return currentUpper / getHeight();
     }
 }

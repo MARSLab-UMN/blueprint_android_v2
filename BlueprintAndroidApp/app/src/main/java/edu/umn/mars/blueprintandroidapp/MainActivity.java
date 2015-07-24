@@ -50,6 +50,7 @@ import java.util.Scanner;
 public class MainActivity extends ActionBarActivity {
     //In an Activity
     static public List<Double> traj_vertices = new ArrayList<Double>();
+    static public float MaxZ, MinZ;
     static public List<BlueprintAlignmentData> blueprint_data = new ArrayList<BlueprintAlignmentData>();
 
     static int mNumberOfBlueprints;
@@ -470,12 +471,26 @@ public class MainActivity extends ActionBarActivity {
             int count = 0;
             while (scan.hasNextDouble()) {
                 if (count % state_vec_size == 13 || count % state_vec_size == 14 || count % state_vec_size == 15) {
-                    traj_vertices.add(scan.nextDouble());
+                    double d = scan.nextDouble();
+                    traj_vertices.add(d);
+                    if (count == 15) {
+                        MaxZ = (float) d;
+                        MinZ = (float) d;
+                    }
+                    if (count % state_vec_size == 15) {
+                        if (MaxZ < d) {
+                            MaxZ = (float) d;
+                        }
+                        if (MinZ > d) {
+                            MinZ = (float) d;
+                        }
+                    }
                 } else {
                     scan.nextDouble();
                 }
                 count++;
             }
+            Log.i(DEBUG_TAG, "MAZ: "+MaxZ);
             maxHeightSeekBar.setVisibility(View.VISIBLE);
         } catch (Exception e) {
             Toast.makeText(getBaseContext(), e.getMessage(),

@@ -19,16 +19,6 @@
         android:background="@android:color/transparent" />
 
     <Button
-        android:text="@string/select_trajectory_button"
-        android:onClick="SelectTrajectory"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/select_traj_button"
-        android:layout_toRightOf="@+id/select_blueprint_button"
-        android:layout_toEndOf="@+id/select_blueprint_button"
-        android:layout_alignTop="@+id/select_blueprint_button" />
-
-    <Button
         android:text="@string/select_blueprint_button"
         android:onClick="SelectBlueprint"
         android:layout_width="wrap_content"
@@ -37,6 +27,43 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text=" or "
+        android:id="@+id/or_word"
+        android:layout_alignBottom="@+id/select_blueprint_button"
+        android:layout_toRightOf="@+id/select_blueprint_button"
+        android:layout_toEndOf="@+id/select_blueprint_button" />
+    <Button
+        android:onClick="LoadAlignment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/load_alignment_button"
+        android:id="@+id/load_alignment_button"
+        android:layout_below="@+id/current_blueprint_label"
+        android:layout_toRightOf="@+id/or_word"
+        android:layout_toEndOf="@+id/or_word" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text=", "
+        android:id="@+id/comma"
+        android:layout_alignBottom="@+id/load_alignment_button"
+        android:layout_toRightOf="@+id/load_alignment_button"
+        android:layout_toEndOf="@+id/load_alignment_button" />
+    <Button
+        android:text="@string/select_trajectory_button"
+        android:onClick="SelectTrajectory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/select_traj_button"
+        android:layout_toRightOf="@+id/comma"
+        android:layout_toEndOf="@+id/comma"
+        android:layout_alignBottom="@+id/load_alignment_button" />
+
 
     <Button
         android:onClick="ResetAll"
@@ -69,15 +96,6 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
-    <Button
-        android:onClick="LoadAlignment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/load_alignment_button"
-        android:id="@+id/load_alignment_button"
-        android:layout_toRightOf="@+id/select_traj_button"
-        android:layout_toEndOf="@+id/select_traj_button"
-        android:layout_alignTop="@+id/select_traj_button" />
 
     <Button
         android:onClick="NextBlueprint"
@@ -171,6 +189,8 @@
         android:layout_alignParentEnd="true"
         android:layout_alignLeft="@+id/select_toggle_button"
         android:layout_alignStart="@+id/select_toggle_button" />
+
+
 
 
 </RelativeLayout>
