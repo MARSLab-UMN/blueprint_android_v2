@@ -141,6 +141,13 @@
         android:text="@string/lock_scale"
         android:id="@+id/lock_scale"
         android:checked="false" />
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/lock_z_height"
+            android:id="@+id/lock_z_height"
+            android:checked="false"
+            android:onClick="ToggleZSelection"/>
     </LinearLayout>
 
     <TextView
@@ -152,6 +159,18 @@
         android:layout_above="@id/select_blueprint_button"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"  />
+
+    <edu.umn.mars.blueprintandroidapp.ZHeightDoubleSeekBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/z_height_seek_bar"
+        android:layout_below="@+id/reset_all_button"
+        android:layout_alignBottom="@+id/current_blueprint_label"
+        android:indeterminate="false"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignLeft="@+id/select_toggle_button"
+        android:layout_alignStart="@+id/select_toggle_button" />
 
 
 </RelativeLayout>

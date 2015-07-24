@@ -28,6 +28,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -75,8 +76,10 @@ public class MainActivity extends ActionBarActivity {
     static public CheckBox lockYCheckBox;
     static public CheckBox lockRotationCheckBox;
     static public CheckBox lockScaleCheckBox;
+    static public CheckBox lockZCheckBox;
     static public TextView measurementTextView;
     static public TextView currentBlueprintTextView;
+    static public ZHeightDoubleSeekBar maxHeightSeekBar;
 
     // Alignment parameters and variables
     private int mActivePointerId = MotionEvent.INVALID_POINTER_ID;
@@ -103,8 +106,11 @@ public class MainActivity extends ActionBarActivity {
         lockYCheckBox = (CheckBox) findViewById(R.id.lock_y);
         lockRotationCheckBox = (CheckBox) findViewById(R.id.lock_rotation);
         lockScaleCheckBox = (CheckBox) findViewById(R.id.lock_scale);
+        lockZCheckBox = (CheckBox) findViewById(R.id.lock_z_height);
         drawView = (DrawView) findViewById(R.id.draw_view);
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
+        maxHeightSeekBar = (ZHeightDoubleSeekBar) findViewById(R.id.z_height_seek_bar);
+        maxHeightSeekBar.setVisibility(View.INVISIBLE);
         blueprintImageView.setScaleType(mScaleType);
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
         requestNumberOfBlueprints();
@@ -470,6 +476,7 @@ public class MainActivity extends ActionBarActivity {
                 }
                 count++;
             }
+            maxHeightSeekBar.setVisibility(View.VISIBLE);
         } catch (Exception e) {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
@@ -803,7 +810,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void PreviousBlueprint(View view) {
-            GoToBlueprintAtIdx(mCurrentBlueprintIdx-1);
+            GoToBlueprintAtIdx(mCurrentBlueprintIdx - 1);
     }
 
     public void SelectTrajectory(View view) {
@@ -814,6 +821,14 @@ public class MainActivity extends ActionBarActivity {
     public void SelectBlueprint(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.BLUEPRINT);
         dialog.show();
+    }
+
+    public void ToggleZSelection (View view) {
+        if (lockZCheckBox.isChecked() || traj_vertices.isEmpty()) {
+            maxHeightSeekBar.setVisibility(View.INVISIBLE);
+        } else {
+            maxHeightSeekBar.setVisibility(View.VISIBLE);
+        }
     }
 
     public void ResetAlignmentData() {

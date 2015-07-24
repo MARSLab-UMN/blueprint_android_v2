@@ -11,6 +11,7 @@
     <string name="lock_y">Lock the Y direction</string>
     <string name="lock_rotation">Lock rotation</string>
     <string name="lock_scale">Lock scaling</string>
+    <string name="lock_z_height">Lock Z-axis selection</string>
 
     <!--UI Labels-->
     <string name="current_blueprint_label"></string>
