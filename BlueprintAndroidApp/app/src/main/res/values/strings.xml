@@ -19,7 +19,7 @@
     <string name="current_blueprint_label"></string>
 
     <!--Settings Menu-->
-    <string name="load_alignment_button">Load Alignment</string>
+    <string name="load_alignment_button">Load Config</string>
     <string name="next_blueprint_button">Next Blueprint</string>
     <string name="back_blueprint_button">Previous Blueprint</string>
     <string name="action_settings">Settings</string>

@@ -546,16 +546,39 @@ public class MainActivity extends ActionBarActivity {
     private void readAlignmentData() {
         try {
             File myFile = new File(mCurrentDir + mChosenFile);
-            Scanner scan = new Scanner(myFile);
 
-            blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX = scan.nextFloat();
-            blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY = scan.nextFloat();
-            blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot = scan.nextFloat();
-            blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale = scan.nextFloat();
+            FileInputStream is = new FileInputStream(myFile);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
-            drawView.invalidate();
-            drawView.requestLayout();
+            while (!reader.readLine().contains("blueprint")) {
+                // do nothing
+            }
 
+            String numFloorsLine = reader.readLine();
+            String[] numberFloorsSplit = numFloorsLine.trim().split("\\s");
+            int numberOfBlueprints = Integer.parseInt(numberFloorsSplit[numberFloorsSplit.length-1]);
+            Log.i(DEBUG_TAG, "" + numberOfBlueprints);
+            ResetBlueprintData();
+            mNumberOfBlueprints = numberOfBlueprints;
+            setBlueprintClasses();
+
+            int numberLines = 6;
+            for (int i = 0; i < mNumberOfBlueprints; i++) {
+                String configStr[] = new String[numberLines];
+                for (int line = 0; line < numberLines; line++) {
+                    configStr[line] = reader.readLine();
+                    if (configStr[line].trim().isEmpty()) {
+                        line--;
+                    }
+                }
+
+                blueprint_data.get(i).loadFromConfigString(configStr);
+            }
+
+            reader.close();
+            is.close();
+
+            GoToBlueprintAtIdx(0);
         } catch (Exception e) {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
@@ -691,8 +714,7 @@ public class MainActivity extends ActionBarActivity {
                     "page_2 = 0" +System.getProperty("line.separator") +
                      System.getProperty("line.separator") +
                      System.getProperty("line.separator") +
-                     System.getProperty("line.separator")
-                    ;
+                     System.getProperty("line.separator");
 
             String blueprint_portion = "renderable_3 = blueprint" + System.getProperty("line.separator");
             blueprint_portion += "floors_3 = "+ mNumberOfBlueprints+ System.getProperty("line.separator");
@@ -965,6 +987,11 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
+    public void ResetBlueprintData() {
+        blueprint_data.clear();
+        blueprintImageView.setImageResource(android.R.color.transparent);
+    }
+
     public void ResetAll(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Reset App")
@@ -975,9 +1002,8 @@ public class MainActivity extends ActionBarActivity {
                         ResetAlignmentData();
                         traj_vertices.clear();
                         traj_vertices_buckets.clear();
-                        blueprint_data.clear();
 
-                        blueprintImageView.setImageResource(android.R.color.transparent);
+                        ResetBlueprintData();
                         requestNumberOfBlueprints();
                         setBlueprintClasses();
 

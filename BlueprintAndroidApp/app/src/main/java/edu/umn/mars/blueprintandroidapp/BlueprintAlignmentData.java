@@ -7,6 +7,8 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.util.Deque;
+
 /**
  * Created by mars on 7/23/15.
  */
@@ -125,8 +127,39 @@ public class BlueprintAlignmentData {
         blueprint_portion += "  origin_"+i+"_3 = [" + Integer.toString(Math.round(TrajPosX)) + ", " + Integer.toString(Math.round(TrajPosY)) + "]" + System.getProperty("line.separator");
         blueprint_portion += "  blueprint_file_"+i+"_3 = " + blueprintFileLocation + System.getProperty("line.separator");
 
-        blueprint_portion +=System.getProperty("line.separator");
-
         return blueprint_portion;
+    }
+
+    public void loadFromConfigString(String str[]) {
+        String indexStr[];
+        String scaleStr[];
+        String rotStr[];
+        String zRangeStr[];
+        String originStr[];
+        String fileStr[];
+
+        for (int i = 0; i < 6; i++) {
+            if (str[i].contains("px_per_meter")) {
+                scaleStr = str[i].trim().split("\\s");
+            } else if (str[i].contains("theta")) {
+                rotStr = str[i].trim().split("\\s");
+            } else if (str[i].contains("z_range")) {
+                zRangeStr = str[i].trim().split("[");
+            } else if (str[i].contains("origin")) {
+                originStr = str[i].trim().split("[");
+            } else if (str[i].contains("blueprint_file")) {
+                fileStr = str[i].trim().split("\\s");
+                blueprintFileLocation = fileStr[fileStr.length-1];
+                LoadBlueprintFile(blueprintFileLocation, MainActivity.blueprintImageView);
+            }
+        }
+
+//        TrajPosX = originStr[1].split(",")[0];
+//        TrajPosY = originStr[1].split(",")[0]
+//        TrajRot = rotStr[rotStr.length-1];
+//        TrajScale = scaleStr[scaleStr.length-1];
+//        MinZ = 0;
+//        MaxZ = 0;
+
     }
 }
