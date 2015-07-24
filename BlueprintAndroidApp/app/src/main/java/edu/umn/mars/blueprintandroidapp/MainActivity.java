@@ -633,12 +633,59 @@ public class MainActivity extends ActionBarActivity {
             FileOutputStream fOut = new FileOutputStream(file, false);
             OutputStreamWriter myOutWriter =
                     new OutputStreamWriter(fOut);
-            myOutWriter.append(Float.toString(blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX) + " ");
-            myOutWriter.append(Float.toString(blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY) + " ");
-            myOutWriter.append(Float.toString(blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot) + " ");
-            myOutWriter.append(Float.toString(blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale) + " ");
-            myOutWriter.append(System.getProperty("line.separator"));
-            myOutWriter.close();
+            String opening = "num_renderables = 5" + System.getProperty("line.separator") +
+                    "renderable_0 = image" +System.getProperty("line.separator") +
+                    "size_0 = [1920, 1080]" +System.getProperty("line.separator") +
+                    "position_0 = [0,0]" +System.getProperty("line.separator") +
+                    "page_0 = 0" +System.getProperty("line.separator") +
+                     System.getProperty("line.separator") +
+                    "renderable_1 = points" +System.getProperty("line.separator") +
+                    "size_1 = [1920, 1080]" +System.getProperty("line.separator") +
+                    "position_1 = [0,0]" +System.getProperty("line.separator") +
+                    "page_1 = 0" +System.getProperty("line.separator") +
+                     System.getProperty("line.separator") +
+                    "renderable_2 = trajectory" +System.getProperty("line.separator") +
+                    "size_2 = [1920, 1080]" +System.getProperty("line.separator") +
+                    "position_2 = [0,0]" +System.getProperty("line.separator") +
+                    "page_2 = 0" +System.getProperty("line.separator") +
+                     System.getProperty("line.separator") +
+                     System.getProperty("line.separator") +
+                     System.getProperty("line.separator")
+                    ;
+
+            String blueprint_portion = "renderable_3 = blueprint" + System.getProperty("line.separator");
+            blueprint_portion += "floors_3 = "+ mNumberOfBlueprints+ System.getProperty("line.separator");
+            for (int i = 0; i < mNumberOfBlueprints; i++) {
+                blueprint_portion +="### floor " + (i+1)+System.getProperty("line.separator");
+                blueprint_portion += "px_per_meter_"+i+"_3 = " + Float.toString(blueprint_data.get(i).TrajPosX)+ System.getProperty("line.separator");
+                blueprint_portion += "theta_"+i+"_3 = " + Float.toString(blueprint_data.get(i).TrajPosX) + System.getProperty("line.separator");
+                blueprint_portion += "z_range_"+i+"_3 = " + Float.toString(blueprint_data.get(i).TrajPosY) + System.getProperty("line.separator");
+                blueprint_portion += "origin_"+i+"_3 = " + Float.toString(blueprint_data.get(i).TrajRot) + System.getProperty("line.separator");
+                blueprint_portion += "blueprint_file_"+i+"_3 = " +Float.toString(blueprint_data.get(i).TrajScale)+ System.getProperty("line.separator");
+
+               /* blueprint_portion += Float.toString(blueprint_data.get(i).TrajPosX) + System.getProperty("line.separator") ;
+                blueprint_portion += Float.toString(blueprint_data.get(i).TrajPosY) + System.getProperty("line.separator") ;
+                blueprint_portion += Float.toString(blueprint_data.get(i).TrajRot) + System.getProperty("line.separator") ;
+                blueprint_portion += Float.toString(blueprint_data.get(i).TrajScale) + System.getProperty("line.separator") ;
+                */
+                blueprint_portion +=System.getProperty("line.separator");
+            }
+
+            String closing_portion = "size_3 = [1920, 1080]" +System.getProperty("line.separator") +
+                    "position_3 = [0, 0]" +System.getProperty("line.separator") +
+                    "page_3 = 1" +System.getProperty("line.separator") +
+                    System.getProperty("line.separator") +
+                    System.getProperty("line.separator") +
+                    "renderable_4 = image" + System.getProperty("line.separator") +
+                    "size_4 = [160,120]" + System.getProperty("line.separator") +
+                    "position_4 = [640, 480]" + System.getProperty("line.separator") +
+                    "page_4 = 1";
+
+            myOutWriter.append(opening);
+            myOutWriter.append(blueprint_portion);
+            myOutWriter.append(closing_portion);
+
+                    myOutWriter.close();
             fOut.close();
 
         } catch (Exception e) {
