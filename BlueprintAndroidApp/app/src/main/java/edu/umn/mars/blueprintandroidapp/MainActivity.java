@@ -74,7 +74,7 @@ public class MainActivity extends ActionBarActivity {
 
 
     // Views
-    DrawView drawView;
+    static public DrawView drawView;
     static public ImageView blueprintImageView;
     static public CheckBox lockXCheckBox;
     static public CheckBox lockYCheckBox;
@@ -495,24 +495,22 @@ public class MainActivity extends ActionBarActivity {
                 count++;
             }
 
-            int numberOfBuckets = (int) Math.floor((MainActivity.MaxZ - MainActivity.MinZ) * BucketPrecision) + 1;
+            int numberOfBuckets = (int) Math.ceil((MainActivity.MaxZ - MainActivity.MinZ) * BucketPrecision) + 1;
             for (int i = 0; i < numberOfBuckets; i++) {
                 traj_vertices_buckets.add(0);
             }
             MaxBucket = 0;
             for (int i = 2; i < MainActivity.traj_vertices.size(); i+=3) {
-                int bucket = (int) Math.round((traj_vertices.get(i) - MinZ)*BucketPrecision);
-                Log.i(DEBUG_TAG, "Bucket: " + bucket + " value: " + traj_vertices.get(i));
+                int bucket = (int) Math.ceil((traj_vertices.get(i) - MinZ) * BucketPrecision);
                 traj_vertices_buckets.set(bucket, traj_vertices_buckets.get(bucket) + 1);
                 if (MaxBucket < traj_vertices_buckets.get(bucket)) {
                     MaxBucket = traj_vertices_buckets.get(bucket);
                 }
             }
-            for (int i = 0; i < numberOfBuckets; i++) {
-                Log.i(DEBUG_TAG, "BUCKET: " + i + " NUM " + traj_vertices_buckets.get(i));
-            }
 
             maxHeightSeekBar.setVisibility(View.VISIBLE);
+            maxHeightSeekBar.invalidate();
+            maxHeightSeekBar.requestLayout();
         } catch (Exception e) {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();

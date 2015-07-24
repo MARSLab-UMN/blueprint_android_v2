@@ -42,7 +42,18 @@ public class DrawView extends View {
     }
 
     private Integer[] PrepTrajPoses() {
-        Integer[] poses = new Integer[MainActivity.traj_vertices.size() / 3 * 2];
+        float lowerZ = MainActivity.maxHeightSeekBar.getLowerValue();
+        float upperZ = MainActivity.maxHeightSeekBar.getUpperValue(); // this should be changed to use the blueprint value
+        int numberOfCorrectHeightPoints = 0;
+        int numVertices = MainActivity.traj_vertices.size();
+        for (int i = 0; i < numVertices; i+=3) {
+            Double z = MainActivity.traj_vertices.get(i + 2);
+            if (z >= lowerZ && z <= upperZ) {
+                numberOfCorrectHeightPoints++;
+            }
+        }
+
+        Integer[] poses = new Integer[numberOfCorrectHeightPoints * 2];
 
         double cosVal = Math.cos(MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot);
         double sinVal = Math.sin(MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot);
@@ -52,11 +63,19 @@ public class DrawView extends View {
         float trajScale = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale;
         float blueprintToIVPixelScaleX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsX();
         float blueprintToIVPixelScaleY = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsY();
+        float posX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX;
+        float posY = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY;
 
-        for (int i = 0; i < poses.length; i += 2) {
-            Double x = MainActivity.traj_vertices.get(3 * i / 2);
-            Double y = MainActivity.traj_vertices.get(3 * i / 2 + 1);
-            Double z = MainActivity.traj_vertices.get(3 * i / 2 + 2);
+
+        for (int i = 0, renderIdx = 0; i < poses.length; renderIdx += 3) {
+            // if out of range, repeat the previous or next location so we don't render missing floors
+
+            Double x = MainActivity.traj_vertices.get(renderIdx);
+            Double y = MainActivity.traj_vertices.get(renderIdx + 1);
+            Double z = MainActivity.traj_vertices.get(renderIdx + 2);
+            if (!(z >= lowerZ && z <= upperZ)) {
+                continue;
+            }
 
             double temp = cosVal * x - sinVal * y;
             y = sinVal * x + cosVal * y;
@@ -65,8 +84,8 @@ public class DrawView extends View {
             x *= trajScale;
             y *= trajScale;
 
-            x += MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX;
-            y += MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY;
+            x += posX;
+            y += posY;
 
             x /= blueprintToIVPixelScaleX;
             y /= blueprintToIVPixelScaleY;
@@ -78,8 +97,11 @@ public class DrawView extends View {
             Long Lx = Math.round(x);
             Long Ly = Math.round(y);
 
+
             poses[i] = Integer.valueOf(Lx.intValue());
             poses[i + 1] = Integer.valueOf(Ly.intValue());
+            i += 2;
+
         }
         return poses;
     }

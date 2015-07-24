@@ -98,6 +98,7 @@ public class ZHeightDoubleSeekBar extends View {
         }
 
         invalidate();
+        MainActivity.drawView.invalidate();
 
         return true;
     }
@@ -143,5 +144,13 @@ public class ZHeightDoubleSeekBar extends View {
 
     private float upperPercentOfHeight() {
         return currentUpper / getHeight();
+    }
+
+    public float getUpperValue() {
+        return getValueAtPercentage(upperPercentOfHeight());
+    }
+
+    public float getLowerValue() {
+        return getValueAtPercentage(lowerPercentOfHeight());
     }
 }
