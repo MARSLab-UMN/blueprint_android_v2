@@ -169,11 +169,11 @@
     </LinearLayout>
 
     <Button
-        android:text="@string/set_custom_scale"
+        android:text="@string/enter_scale_button"
         android:onClick="EnterScale"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/set_custom_scale"
+        android:id="@+id/enter_scale_button"
         android:layout_below="@id/lock_group"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />

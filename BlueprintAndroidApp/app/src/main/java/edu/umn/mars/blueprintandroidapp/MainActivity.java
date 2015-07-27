@@ -87,6 +87,7 @@ public class MainActivity extends ActionBarActivity {
     static public CheckBox lockMinZ;
     static public CheckBox lockMaxZ;
     static public CheckBox lockZCheckBox;
+    static public Button enterScaleButton;
     static public TextView measurementTextView;
     static public TextView currentBlueprintTextView;
     static public ZHeightDoubleSeekBar maxHeightSeekBar;
@@ -125,6 +126,8 @@ public class MainActivity extends ActionBarActivity {
         maxHeightSeekBar = (ZHeightDoubleSeekBar) findViewById(R.id.z_height_seek_bar);
         zSelectionGroup = (LinearLayout) findViewById(R.id.z_selection_group);
         zSelectionGroup.setVisibility(View.INVISIBLE);
+        enterScaleButton = (Button) findViewById(R.id.enter_scale_button);
+        enterScaleButton.setVisibility(View.INVISIBLE);
         blueprintImageView.setScaleType(mScaleType);
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
         requestNumberOfBlueprints();
@@ -542,6 +545,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         zSelectionGroup.setVisibility(View.VISIBLE);
+        enterScaleButton.setVisibility(View.INVISIBLE);
         GoToBlueprintAtIdx(mCurrentBlueprintIdx);
     }
 
@@ -927,6 +931,41 @@ public class MainActivity extends ActionBarActivity {
                 break;
         }
         return dialog;
+    }
+
+    public void EnterScale(View view) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Enter Scale (pixels/meter) of Current Blueprint");
+
+        // Set an EditText view to get user input
+        final EditText input = new EditText(this);
+        alert.setView(input);
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                float value;
+                try {
+                    value = Float.parseFloat(input.getText().toString());
+                    blueprint_data.get(mCurrentBlueprintIdx).TrajScale = value;
+                    lockScaleCheckBox.setChecked(true);
+                    GoToBlueprintAtIdx(mCurrentBlueprintIdx);
+                } catch (NumberFormatException e) {
+                    CharSequence text = "Please enter a floating point number.";
+                    Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
+                    toast.show();
+                    return;
+                }
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Canceled.
+            }
+        });
+
+        alert.show();
     }
 
     public void LoadAlignment(View view) {
