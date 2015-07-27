@@ -41,11 +41,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
@@ -176,6 +180,9 @@ public class MainActivity extends ActionBarActivity {
         for (int i = 0; i < mNumberOfBlueprints; i++) {
             blueprint_data.add(new BlueprintAlignmentData());
         }
+
+        blueprint_data.get(0).LockMinZ = true;
+        blueprint_data.get(blueprint_data.size()-1).LockMaxZ = true;
 
         GoToBlueprintAtIdx(0);
     }
@@ -522,9 +529,6 @@ public class MainActivity extends ActionBarActivity {
                 }
             }
 
-            zSelectionGroup.setVisibility(View.VISIBLE);
-            maxHeightSeekBar.invalidate();
-            maxHeightSeekBar.requestLayout();
         } catch (Exception e) {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
@@ -537,52 +541,77 @@ public class MainActivity extends ActionBarActivity {
             return;
         }
 
-        ResetAlignmentData();
+        zSelectionGroup.setVisibility(View.VISIBLE);
+        GoToBlueprintAtIdx(mCurrentBlueprintIdx);
     }
 
 
 
 
     private void readAlignmentData() {
+        Properties prop = new Properties();
+        InputStream input = null;
+
         try {
-            File myFile = new File(mCurrentDir + mChosenFile);
 
-            FileInputStream is = new FileInputStream(myFile);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            input = new FileInputStream(mCurrentDir + mChosenFile);
 
-            while (!reader.readLine().contains("blueprint")) {
-                // do nothing
+            // load a properties file
+            prop.load(input);
+
+            // get the property value and print it out
+
+            int blueprint_config_idx = -1;
+            for (Properties.Entry<Object, Object> entry : prop.entrySet()) {
+                String key = (String) entry.getKey();
+                String value = (String) entry.getValue();
+                if (value.equals("blueprint")) {
+                    String keySplit[] = key.trim().split("_");
+                    blueprint_config_idx = Integer.parseInt(keySplit[keySplit.length-1]);
+                    break;
+                }
             }
-
-            String numFloorsLine = reader.readLine();
-            String[] numberFloorsSplit = numFloorsLine.trim().split("\\s");
-            int numberOfBlueprints = Integer.parseInt(numberFloorsSplit[numberFloorsSplit.length-1]);
-            Log.i(DEBUG_TAG, "" + numberOfBlueprints);
+            int numberOfBlueprints = Integer.parseInt(prop.getProperty("floors_" + blueprint_config_idx));
             ResetBlueprintData();
             mNumberOfBlueprints = numberOfBlueprints;
             setBlueprintClasses();
 
-            int numberLines = 6;
             for (int i = 0; i < mNumberOfBlueprints; i++) {
-                String configStr[] = new String[numberLines];
-                for (int line = 0; line < numberLines; line++) {
-                    configStr[line] = reader.readLine();
-                    if (configStr[line].trim().isEmpty()) {
-                        line--;
-                    }
-                }
-
-                blueprint_data.get(i).loadFromConfigString(configStr);
+                blueprint_data.get(i).loadFromConfigProperties(prop, i, blueprint_config_idx);
             }
 
-            reader.close();
-            is.close();
-
+            maxHeightSeekBar.isFirstTouch = false;
             GoToBlueprintAtIdx(0);
-        } catch (Exception e) {
-            Toast.makeText(getBaseContext(), e.getMessage(),
-                    Toast.LENGTH_SHORT).show();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+
+//        try {
+//            File myFile = new File(mCurrentDir + mChosenFile);
+//
+//            FileInputStream is = new FileInputStream(myFile);
+//            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+//
+//            while (!reader.readLine().contains("blueprint")) {
+//                // do nothing
+//            }
+//
+//            String numFloorsLine = reader.readLine();
+//            String[] numberFloorsSplit = numFloorsLine.trim().split("\\s");
+
+
+//        } catch (Exception e) {
+//            Toast.makeText(getBaseContext(), e.getMessage(),
+//                    Toast.LENGTH_SHORT).show();
+//        }
     }
 
     private void loadFileList(String baseFolderPath) {
@@ -716,10 +745,11 @@ public class MainActivity extends ActionBarActivity {
                      System.getProperty("line.separator") +
                      System.getProperty("line.separator");
 
-            String blueprint_portion = "renderable_3 = blueprint" + System.getProperty("line.separator");
-            blueprint_portion += "floors_3 = "+ mNumberOfBlueprints+ System.getProperty("line.separator");
+            int renderableIndx = 3;
+            String blueprint_portion = "renderable_"+renderableIndx+" = blueprint" + System.getProperty("line.separator");
+            blueprint_portion += "floors_"+renderableIndx+" = "+ mNumberOfBlueprints+ System.getProperty("line.separator");
             for (int i = 0; i < mNumberOfBlueprints; i++) {
-                blueprint_portion += blueprint_data.get(i).createConfigFileString(i);
+                blueprint_portion += blueprint_data.get(i).createConfigFileString(i, renderableIndx);
             }
 
             String closing_portion = "size_3 = [1920, 1080]" +System.getProperty("line.separator") +
@@ -952,10 +982,14 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void ResetAlignmentData() {
-        blueprint_data.get(mCurrentBlueprintIdx).ResetAlignmentData();
+        for (int i = 0; i < mNumberOfBlueprints; i++) {
+            blueprint_data.get(i).ResetAlignmentData();
+        }
 
         drawView.invalidate();
         drawView.requestLayout();
+        maxHeightSeekBar.invalidate();
+        maxHeightSeekBar.requestLayout();
     }
 
     public void ResetAlignment(View view) {

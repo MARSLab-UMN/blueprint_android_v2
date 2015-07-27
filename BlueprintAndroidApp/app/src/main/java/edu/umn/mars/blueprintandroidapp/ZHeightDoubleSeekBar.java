@@ -19,7 +19,7 @@ public class ZHeightDoubleSeekBar extends View {
     Paint textStrokePaint = new Paint();
     static final String DEBUG_TAG = "ZHeightDoubleSeekBar";
 
-    private boolean isFirstTouch = true;
+    public boolean isFirstTouch = true;
 
     float currentMax = 1e7f;
     float currentMin = -1e7f;

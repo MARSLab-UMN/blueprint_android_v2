@@ -8,6 +8,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.Deque;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by mars on 7/23/15.
@@ -114,8 +117,9 @@ public class BlueprintAlignmentData {
         return ReturnFirstOrSecondForType(blueprintToImageViewPixels_FITCENTER, blueprintToImageViewPixelsY_FITXY);
     }
 
-    public String createConfigFileString(int i) {
+    public String createConfigFileString(int i, int renderable_idx) {
         String maxZString = Float.toString(MaxZ), minZString = Float.toString(MinZ);
+        String renderableIndxStr = "_"+renderable_idx;
         if (LockMaxZ) {
             maxZString = "1e10";
         }
@@ -127,45 +131,38 @@ public class BlueprintAlignmentData {
 
         String blueprint_portion = "";
         blueprint_portion +="### floor " + (i+1)+System.getProperty("line.separator");
-        blueprint_portion += "  px_per_meter_"+i+"_3 = " + Float.toString(TrajScale)+ System.getProperty("line.separator");
-        blueprint_portion += "  theta_"+i+"_3 = " + Double.toString(TrajRot*180/Math.PI) +  System.getProperty("line.separator");
-        blueprint_portion += "  z_range_"+i+"_3 = " + zHeightString + System.getProperty("line.separator");
-        blueprint_portion += "  origin_"+i+"_3 = [" + Integer.toString(Math.round(TrajPosX)) + ", " + Integer.toString(Math.round(TrajPosY)) + "]" + System.getProperty("line.separator");
-        blueprint_portion += "  blueprint_file_"+i+"_3 = " + blueprintFileLocation + System.getProperty("line.separator");
+        blueprint_portion += "  px_per_meter_"+i+renderableIndxStr+" = " + Float.toString(TrajScale)+ System.getProperty("line.separator");
+        blueprint_portion += "  theta_"+i+renderableIndxStr+" = " + Double.toString(TrajRot*180/Math.PI) +  System.getProperty("line.separator");
+        blueprint_portion += "  z_range_"+i+renderableIndxStr+" = " + zHeightString + System.getProperty("line.separator");
+        blueprint_portion += "  origin_"+i+renderableIndxStr+" = [" + Integer.toString(Math.round(TrajPosX)) + ", " + Integer.toString(Math.round(TrajPosY)) + "]" + System.getProperty("line.separator");
+        blueprint_portion += "  blueprint_file_"+i+renderableIndxStr+" = " + blueprintFileLocation + System.getProperty("line.separator");
 
         return blueprint_portion;
     }
 
-    public void loadFromConfigString(String str[]) {
-        String indexStr[];
-        String scaleStr[];
-        String rotStr[];
-        String zRangeStr[];
-        String originStr[];
-        String fileStr[];
+    public void loadFromConfigProperties(Properties prop, int blueprint_index, int renderable_number) {
+        String suffix = "_" + blueprint_index + "_" + renderable_number;
 
-        for (int i = 0; i < 6; i++) {
-            if (str[i].contains("px_per_meter")) {
-                scaleStr = str[i].trim().split("\\s");
-            } else if (str[i].contains("theta")) {
-                rotStr = str[i].trim().split("\\s");
-            } else if (str[i].contains("z_range")) {
-                zRangeStr = str[i].trim().split("[");
-            } else if (str[i].contains("origin")) {
-                originStr = str[i].trim().split("[");
-            } else if (str[i].contains("blueprint_file")) {
-                fileStr = str[i].trim().split("\\s");
-                blueprintFileLocation = fileStr[fileStr.length-1];
-                LoadBlueprintFile(blueprintFileLocation, MainActivity.blueprintImageView);
-            }
+        blueprintFileLocation = prop.getProperty("blueprint_file" + suffix);
+        LoadBlueprintFile(blueprintFileLocation, MainActivity.blueprintImageView); // this should be called first so that it doesn't overwrite the following data
+
+        String doubleArrayPatternString = "\\[(.*),\\s*(.*)\\]";
+        Pattern pattern = Pattern.compile(doubleArrayPatternString);
+
+
+        Matcher matcher = pattern.matcher(prop.getProperty("origin" + suffix));
+        if (matcher.find()) {
+            TrajPosX = Float.parseFloat(matcher.group(1));
+            TrajPosY = Float.parseFloat(matcher.group(2));
         }
+        TrajRot = (float) (Float.parseFloat(prop.getProperty("theta" + suffix))*Math.PI/180f); // convert to radians
+        Log.i(MainActivity.DEBUG_TAG, "ROT: " + TrajRot);
+        TrajScale = Float.parseFloat(prop.getProperty("px_per_meter" + suffix));
 
-//        TrajPosX = originStr[1].split(",")[0];
-//        TrajPosY = originStr[1].split(",")[0]
-//        TrajRot = rotStr[rotStr.length-1];
-//        TrajScale = scaleStr[scaleStr.length-1];
-//        MinZ = 0;
-//        MaxZ = 0;
-
+        matcher = pattern.matcher(prop.getProperty("z_range" + suffix));
+        if (matcher.find()) {
+            MinZ = Float.parseFloat(matcher.group(1));
+            MaxZ = Float.parseFloat(matcher.group(2));
+        }
     }
 }

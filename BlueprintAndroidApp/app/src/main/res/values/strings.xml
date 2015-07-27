@@ -17,6 +17,7 @@
 
     <!--UI Labels-->
     <string name="current_blueprint_label"></string>
+    <string name="set_custom_scale">Enter Scale</string>
 
     <!--Settings Menu-->
     <string name="load_alignment_button">Load Config</string>
