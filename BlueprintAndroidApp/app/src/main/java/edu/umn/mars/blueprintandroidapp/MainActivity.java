@@ -545,7 +545,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         zSelectionGroup.setVisibility(View.VISIBLE);
-        enterScaleButton.setVisibility(View.INVISIBLE);
+        enterScaleButton.setVisibility(View.VISIBLE);
         GoToBlueprintAtIdx(mCurrentBlueprintIdx);
     }
 
