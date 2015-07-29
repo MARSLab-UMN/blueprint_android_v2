@@ -26,7 +26,8 @@
         android:id="@+id/select_blueprint_button"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:alpha="0.7" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,7 +36,8 @@
         android:id="@+id/or_word"
         android:layout_alignBottom="@+id/select_blueprint_button"
         android:layout_toRightOf="@+id/select_blueprint_button"
-        android:layout_toEndOf="@+id/select_blueprint_button" />
+        android:layout_toEndOf="@+id/select_blueprint_button"
+        android:alpha="0.7" />
     <Button
         android:onClick="LoadAlignment"
         android:layout_width="wrap_content"
@@ -44,7 +46,8 @@
         android:id="@+id/load_alignment_button"
         android:layout_below="@+id/current_blueprint_label"
         android:layout_toRightOf="@+id/or_word"
-        android:layout_toEndOf="@+id/or_word" />
+        android:layout_toEndOf="@+id/or_word"
+        android:alpha="0.7" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -53,7 +56,8 @@
         android:id="@+id/comma"
         android:layout_alignBottom="@+id/load_alignment_button"
         android:layout_toRightOf="@+id/load_alignment_button"
-        android:layout_toEndOf="@+id/load_alignment_button" />
+        android:layout_toEndOf="@+id/load_alignment_button"
+        android:alpha="0.7" />
     <Button
         android:text="@string/select_trajectory_button"
         android:onClick="SelectTrajectory"
@@ -62,7 +66,8 @@
         android:id="@+id/select_traj_button"
         android:layout_toRightOf="@+id/comma"
         android:layout_toEndOf="@+id/comma"
-        android:layout_alignBottom="@+id/select_blueprint_button" />
+        android:layout_alignBottom="@+id/select_blueprint_button"
+        android:alpha="0.7" />
 
 
     <Button
@@ -73,7 +78,8 @@
         android:id="@+id/reset_all_button"
         android:layout_toLeftOf="@+id/reset_alignment_button"
         android:layout_toStartOf="@+id/reset_alignment_button"
-        android:layout_alignTop="@+id/reset_alignment_button"  />
+        android:layout_alignTop="@+id/reset_alignment_button"
+        android:alpha="0.7"/>
 
     <Button
         android:onClick="ResetAlignment"
@@ -83,7 +89,8 @@
         android:id="@+id/reset_alignment_button"
         android:layout_toLeftOf="@+id/select_toggle_button"
         android:layout_toStartOf="@+id/select_toggle_button"
-        android:layout_alignTop="@+id/select_toggle_button"  />
+        android:layout_alignTop="@+id/select_toggle_button"
+        android:alpha="0.7"/>
 
 
     <Button
@@ -94,7 +101,8 @@
         android:id="@+id/select_toggle_button"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:alpha="0.7" />
 
 
     <Button
@@ -105,7 +113,8 @@
         android:id="@+id/next_blueprint_button"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:alpha="0.7" />
 
     <Button
         android:onClick="PreviousBlueprint"
@@ -115,7 +124,8 @@
         android:id="@+id/back_blueprint_button"
         android:layout_alignBottom="@+id/next_blueprint_button"
         android:layout_toLeftOf="@+id/next_blueprint_button"
-        android:layout_toStartOf="@+id/next_blueprint_button" />
+        android:layout_toStartOf="@+id/next_blueprint_button"
+        android:alpha="0.7"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -176,7 +186,8 @@
         android:id="@+id/enter_scale_button"
         android:layout_below="@id/lock_group"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:alpha="0.7"/>
 
     <TextView
         android:layout_width="wrap_content"
