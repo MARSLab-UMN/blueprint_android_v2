@@ -10,16 +10,20 @@
         android:id="@+id/imageview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerInParent="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/select_blueprint_button"
+        android:layout_alignTop="@+id/draw_view" />
 
     <edu.umn.mars.blueprintandroidapp.DrawView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/draw_view"
-        android:background="@android:color/transparent" />
+        android:background="@android:color/transparent"
+        android:layout_below="@+id/reset_all_button"
+        android:layout_above="@+id/select_blueprint_button" />
 
     <Button
-        android:text="@string/select_blueprint_button"
+        android:text="@string/load_blueprint"
         android:onClick="SelectBlueprint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,46 +32,28 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:alpha="0.7" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text=" or "
-        android:id="@+id/or_word"
-        android:layout_alignBottom="@+id/select_blueprint_button"
-        android:layout_toRightOf="@+id/select_blueprint_button"
-        android:layout_toEndOf="@+id/select_blueprint_button"
-        android:alpha="0.7" />
+
     <Button
         android:onClick="LoadAlignment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/load_alignment_button"
+        android:text="@string/load_config"
         android:id="@+id/load_alignment_button"
         android:layout_below="@+id/current_blueprint_label"
-        android:layout_toRightOf="@+id/or_word"
-        android:layout_toEndOf="@+id/or_word"
-        android:alpha="0.7" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text=", "
-        android:id="@+id/comma"
-        android:layout_alignBottom="@+id/load_alignment_button"
-        android:layout_toRightOf="@+id/load_alignment_button"
-        android:layout_toEndOf="@+id/load_alignment_button"
-        android:alpha="0.7" />
+        android:alpha="0.7"
+        android:layout_toRightOf="@+id/select_blueprint_button"
+        android:layout_toEndOf="@+id/select_blueprint_button" />
+
     <Button
-        android:text="@string/select_trajectory_button"
-        android:onClick="SelectTrajectory"
+        android:text="@string/load_images"
+        android:onClick="SelectImages"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/select_traj_button"
-        android:layout_toRightOf="@+id/comma"
-        android:layout_toEndOf="@+id/comma"
         android:layout_alignBottom="@+id/select_blueprint_button"
-        android:alpha="0.7" />
+        android:alpha="0.7"
+        android:layout_toRightOf="@+id/load_alignment_button"
+        android:layout_toEndOf="@+id/load_alignment_button" />
 
 
     <Button
@@ -76,10 +62,10 @@
         android:layout_height="wrap_content"
         android:text="@string/reset_all"
         android:id="@+id/reset_all_button"
+        android:alpha="0.7"
+        android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/reset_alignment_button"
-        android:layout_toStartOf="@+id/reset_alignment_button"
-        android:layout_alignTop="@+id/reset_alignment_button"
-        android:alpha="0.7"/>
+        android:layout_toStartOf="@+id/reset_alignment_button" />
 
     <Button
         android:onClick="ResetAlignment"
@@ -87,29 +73,17 @@
         android:layout_height="wrap_content"
         android:text="@string/reset_alignment"
         android:id="@+id/reset_alignment_button"
-        android:layout_toLeftOf="@+id/select_toggle_button"
-        android:layout_toStartOf="@+id/select_toggle_button"
-        android:layout_alignTop="@+id/select_toggle_button"
-        android:alpha="0.7"/>
-
-
-    <Button
-        android:onClick="SelectToggle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/toggle_size"
-        android:id="@+id/select_toggle_button"
+        android:alpha="0.7"
         android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:alpha="0.7" />
+        android:layout_alignRight="@+id/next_blueprint_button"
+        android:layout_alignEnd="@+id/next_blueprint_button" />
 
 
     <Button
         android:onClick="NextBlueprint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/next_blueprint_button"
+        android:text="@string/next_blueprint"
         android:id="@+id/next_blueprint_button"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
@@ -120,7 +94,7 @@
         android:onClick="PreviousBlueprint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/back_blueprint_button"
+        android:text="@string/previous_blueprint"
         android:id="@+id/back_blueprint_button"
         android:layout_alignBottom="@+id/next_blueprint_button"
         android:layout_toLeftOf="@+id/next_blueprint_button"
@@ -131,7 +105,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@android:color/black"
-        android:text="@string/load_alignment_button"
+        android:text="@string/load_config"
         android:id="@+id/current_alignment_measurements"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
@@ -145,49 +119,30 @@
         android:layout_below="@+id/current_alignment_measurements"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/lock_x"
-        android:id="@+id/lock_x"
-        android:checked="false" />
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/lock_y"
-        android:id="@+id/lock_y"
-        android:checked="false"/>
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/lock_rotation"
-        android:id="@+id/lock_rotation"
-        android:checked="false" />
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/lock_scale"
-        android:id="@+id/lock_scale"
-        android:checked="false" />
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/lock_z_height"
-            android:id="@+id/lock_z_height"
-            android:checked="false"
-            android:onClick="ToggleZSelection"/>
+
     </LinearLayout>
 
     <Button
-        android:text="@string/enter_scale_button"
+        android:text="@string/enter_scale"
         android:onClick="EnterScale"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/enter_scale_button"
-        android:layout_below="@id/lock_group"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:alpha="0.7"/>
+        android:alpha="0.7"
+        android:layout_alignTop="@+id/select_traj_button"
+        android:layout_toRightOf="@+id/select_traj_button"
+        android:layout_toEndOf="@+id/select_traj_button" />
+
+    <Button
+        android:text="@string/draw_path"
+        android:onClick="DrawPath"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/draw_path_button"
+        android:alpha="0.7"
+        android:layout_below="@+id/imageview"
+        android:layout_toRightOf="@+id/enter_scale_button"
+        android:layout_toEndOf="@+id/enter_scale_button" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -198,44 +153,6 @@
         android:layout_above="@id/select_blueprint_button"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"  />
-
-    <LinearLayout
-        android:id="@+id/z_selection_group"
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/reset_all_button"
-        android:layout_alignBottom="@+id/current_blueprint_label"
-        android:indeterminate="false"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignLeft="@+id/reset_alignment_button"
-        android:layout_alignStart="@+id/reset_alignment_button">
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/lock_max_inf"
-            android:id="@+id/lock_max_inf"
-            android:checked="false"
-            android:onClick="LockMaxHeight"/>
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/lock_min_inf"
-            android:id="@+id/lock_min_inf"
-            android:checked="false"
-            android:onClick="LockMinHeight"/>
-
-        <edu.umn.mars.blueprintandroidapp.ZHeightDoubleSeekBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/z_height_seek_bar" />
-
-
-    </LinearLayout>
-
 
 
 </RelativeLayout>

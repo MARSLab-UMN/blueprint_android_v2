@@ -5,23 +5,17 @@
     <string name="toggle_size">Toggle Size</string>
     <string name="reset_all">Reset All</string>
     <string name="reset_alignment">Reset Alignment</string>
-    <string name="select_trajectory_button">Load Trajectory</string>
-    <string name="select_blueprint_button">Load Blueprint</string>
-    <string name="lock_x">Lock the X direction</string>
-    <string name="lock_y">Lock the Y direction</string>
-    <string name="lock_rotation">Lock rotation</string>
-    <string name="lock_scale">Lock scaling</string>
-    <string name="lock_z_height">Lock Z-axis selection</string>
-    <string name="lock_max_inf">Maximum Height</string>
-    <string name="lock_min_inf">Minimum Height</string>
+    <string name="load_images">Load Images</string>
+    <string name="load_blueprint">Load Blueprint</string>
 
     <!--UI Labels-->
     <string name="current_blueprint_label"></string>
-    <string name="enter_scale_button">Enter Scale</string>
+    <string name="enter_scale">Enter Scale</string>
+    <string name="draw_path">Draw Path</string>
 
     <!--Settings Menu-->
-    <string name="load_alignment_button">Load Config</string>
-    <string name="next_blueprint_button">Next Blueprint</string>
-    <string name="back_blueprint_button">Previous Blueprint</string>
+    <string name="load_config">Load Config</string>
+    <string name="next_blueprint">Next Blueprint</string>
+    <string name="previous_blueprint">Previous Blueprint</string>
     <string name="action_settings">Settings</string>
 </resources>

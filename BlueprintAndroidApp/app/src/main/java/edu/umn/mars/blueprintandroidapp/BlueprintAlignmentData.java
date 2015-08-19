@@ -16,21 +16,10 @@ import java.util.regex.Pattern;
  * Created by mars on 7/23/15.
  */
 public class BlueprintAlignmentData {
-    static float InitialTrajPosX = 0;
-    static float InitialTrajPosY = 0;
-    static float InitialTrajRot = 0;
-    static float InitialTrajScale = 10.0f;
-    static final float BaseRotation = 0; // unused currently
-
-    public float TrajPosX;
-    public float TrajPosY;
-    public float TrajRot;
-    public float TrajScale;
-    public float MinZ = -1e6f;
-    public float MaxZ = 1e6f;
-    public boolean LockMaxZ = false;
-    public boolean LockMinZ = false;
-    public boolean UnsetMinZ = true;
+    public float TrajPosX = 0;
+    public float TrajPosY = 0;
+    public float TrajRot = 0;
+    public float TrajScale = 50;
 
     public String blueprintFileLocation;
     public Bitmap imageBitmap;
@@ -42,22 +31,17 @@ public class BlueprintAlignmentData {
     private final int startBitmapX_FITXY = 0; // for completeness
     private final int startBitmapY_FITXY = 0; // for completeness
 
-
     private float blueprintToImageViewPixels_FITCENTER;
     private float blueprintToImageViewPixelsX_FITXY;
     private float blueprintToImageViewPixelsY_FITXY;
 
-
-    BlueprintAlignmentData() {
-        ResetAlignmentData();
+    void ResetAlignmentData() {
+        TrajPosX = 0;
+        TrajPosY = 0;
+        TrajRot = 0;
+        TrajScale = 50;
     }
 
-    public void ResetAlignmentData() {
-        TrajScale = InitialTrajScale;
-        TrajPosX = InitialTrajPosX;
-        TrajPosY = InitialTrajPosY;
-        TrajRot = InitialTrajRot;
-    }
 
     void LoadBlueprintFile(String location, ImageView iv) {
         blueprintFileLocation = location;
@@ -84,9 +68,9 @@ public class BlueprintAlignmentData {
         startBitmapX_FITCENTER = Math.round(iv.getWidth() / 2f - (bitmapWidth / blueprintToImageViewPixels_FITCENTER) / 2f);
         startBitmapY_FITCENTER = Math.round(iv.getHeight() / 2f - (bitmapHeight / blueprintToImageViewPixels_FITCENTER) / 2f);
 
-        InitialTrajPosX = bitmapWidth/2f;
-        InitialTrajPosY = bitmapHeight/2f;
-        ResetAlignmentData();
+//        InitialTrajPosX = bitmapWidth/2f;
+//        InitialTrajPosY = bitmapHeight/2f;
+//        ResetAlignmentData();
     }
 
 
@@ -101,44 +85,40 @@ public class BlueprintAlignmentData {
         }
     }
 
+
     public int getUpperCornerX() {
         return ReturnFirstOrSecondForType(startBitmapX_FITCENTER, startBitmapX_FITXY);
     }
+
 
     public int getUpperCornerY() {
         return ReturnFirstOrSecondForType(startBitmapY_FITCENTER, startBitmapY_FITXY);
     }
 
+
     public float getBlueprintToImageViewPixelsX() {
         return ReturnFirstOrSecondForType(blueprintToImageViewPixels_FITCENTER, blueprintToImageViewPixelsX_FITXY);
     }
+
 
     public float getBlueprintToImageViewPixelsY() {
         return ReturnFirstOrSecondForType(blueprintToImageViewPixels_FITCENTER, blueprintToImageViewPixelsY_FITXY);
     }
 
-    public String createConfigFileString(int i, int renderable_idx) {
-        String maxZString = Float.toString(MaxZ), minZString = Float.toString(MinZ);
-        String renderableIndxStr = "_"+renderable_idx;
-        if (LockMaxZ) {
-            maxZString = "1e10";
-        }
 
-        if (LockMinZ) {
-            minZString = "-1e10";
-        }
-        String zHeightString = "[" + minZString + ", " + maxZString + "]";
+    public String createConfigFileString(int i, int renderable_idx) {
+        String renderableIndxStr = "_"+renderable_idx;
 
         String blueprint_portion = "";
         blueprint_portion +="### floor " + (i+1)+System.getProperty("line.separator");
         blueprint_portion += "  px_per_meter_"+i+renderableIndxStr+" = " + Float.toString(TrajScale)+ System.getProperty("line.separator");
         blueprint_portion += "  theta_"+i+renderableIndxStr+" = " + Double.toString(TrajRot*180/Math.PI) +  System.getProperty("line.separator");
-        blueprint_portion += "  z_range_"+i+renderableIndxStr+" = " + zHeightString + System.getProperty("line.separator");
         blueprint_portion += "  origin_"+i+renderableIndxStr+" = [" + Integer.toString(Math.round(TrajPosX)) + ", " + Integer.toString(Math.round(TrajPosY)) + "]" + System.getProperty("line.separator");
         blueprint_portion += "  blueprint_file_"+i+renderableIndxStr+" = " + blueprintFileLocation + System.getProperty("line.separator");
 
         return blueprint_portion;
     }
+
 
     public void loadFromConfigProperties(Properties prop, int blueprint_index, int renderable_number) {
         String suffix = "_" + blueprint_index + "_" + renderable_number;
@@ -159,10 +139,5 @@ public class BlueprintAlignmentData {
         Log.i(MainActivity.DEBUG_TAG, "ROT: " + TrajRot);
         TrajScale = Float.parseFloat(prop.getProperty("px_per_meter" + suffix));
 
-        matcher = pattern.matcher(prop.getProperty("z_range" + suffix));
-        if (matcher.find()) {
-            MinZ = Float.parseFloat(matcher.group(1));
-            MaxZ = Float.parseFloat(matcher.group(2));
-        }
     }
 }
