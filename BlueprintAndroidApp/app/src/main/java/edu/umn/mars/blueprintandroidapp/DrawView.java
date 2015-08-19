@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.CalendarView;
 import android.widget.TextView;
 
+
 public class DrawView extends View {
     Paint paint = new Paint();
     static final String DEBUG_TAG = "DrawView";
@@ -42,23 +43,12 @@ public class DrawView extends View {
         init();
     }
 
-    private Integer[] PrepTrajPoses(Canvas canvas) {
-        float lowerZ = MainActivity.maxHeightSeekBar.getLowerValue();
-        float upperZ = MainActivity.maxHeightSeekBar.getUpperValue(); // this should be changed to use the blueprint value
-        int numberOfCorrectHeightPoints = 0;
-        int numVertices = MainActivity.traj_vertices.size();
-        for (int i = 0; i < numVertices; i+=3) {
-            Double z = MainActivity.traj_vertices.get(i + 2);
-            if (z >= lowerZ && z <= upperZ) {
-                numberOfCorrectHeightPoints++;
-            }
-        }
 
-        Integer[] poses = new Integer[numberOfCorrectHeightPoints * 2];
+    private void PrepTrajPoses(Canvas canvas) {
 
-        float trajRot = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).BaseRotation;
-        trajRot += MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot;
-        trajRot *= -1; // invert since rotating around x
+        float trajRot = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot;
+        float shiftX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX;
+        float shiftY = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY;
         double cosVal = Math.cos(trajRot);
         double sinVal = Math.sin(trajRot);
         int upperCornerX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getUpperCornerX();
@@ -67,53 +57,31 @@ public class DrawView extends View {
         float trajScale = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale;
         float blueprintToIVPixelScaleX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsX();
         float blueprintToIVPixelScaleY = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsY();
-        float posX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX;
-        float posY = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY;
 
-        boolean breakPoint = true; // so we always miss the fist iteration
-        for (int i = 0, renderIdx = 0; i < poses.length; renderIdx += 3) {
-            // if out of range, repeat the previous or next location so we don't render missing floors
+        for (ImagePoint curPoint : MainActivity.imagePoints) {
+            Double curX = curPoint.getX();
+            Double curY = curPoint.getY();
 
-            Double x = MainActivity.traj_vertices.get(renderIdx);
-            Double y = -MainActivity.traj_vertices.get(renderIdx + 1); // negate to rotate around x axis
-            Double z = MainActivity.traj_vertices.get(renderIdx + 2);
-            if (!(z >= lowerZ && z <= upperZ)) {
-                breakPoint = true;
-                continue;
-            }
+            double tempX = cosVal*curX - sinVal*curY;
+            curY = sinVal*curX + cosVal*curY;
+            curX = tempX;
 
-            double temp = cosVal * x - sinVal * y;
-            y = sinVal * x + cosVal * y;
-            x = temp;
-            
-            x *= trajScale;
-            y *= trajScale;
+            curX *= trajScale;
+            curY *= trajScale;
+            curX /= blueprintToIVPixelScaleX;
+            curY /= blueprintToIVPixelScaleY;
 
-            x += posX;
-            y += posY;
+            curX += upperCornerX;
+            curY += upperCornerY;
+            curX += shiftX;
+            curY += shiftY;
 
-            x /= blueprintToIVPixelScaleX;
-            y /= blueprintToIVPixelScaleY;
-
-            x += upperCornerX;
-            y += upperCornerY;
-
-
-            Long Lx = Math.round(x);
-            Long Ly = Math.round(y);
-
-
-            poses[i] = Integer.valueOf(Lx.intValue());
-            poses[i + 1] = Integer.valueOf(Ly.intValue());
-            if (!breakPoint) {
-                canvas.drawLine(poses[i - 2], poses[i - 1], poses[i], poses[i + 1], paint);
-            } else {
-                breakPoint = false;
-            }
-            i += 2;
+            int drawX = Math.round(curX.floatValue());
+            int drawY = Math.round(curY.floatValue());
+            canvas.drawCircle(drawX, drawY, 10, paint);
         }
-        return poses;
     }
+
 
     @Override
     public void onDraw(Canvas canvas) {
@@ -121,8 +89,9 @@ public class DrawView extends View {
             return;
         }
 
-        if (MainActivity.traj_vertices.size() > 0) {
-            Integer[] poses = PrepTrajPoses(canvas);
+        if (MainActivity.imagePoints.size() > 0) {
+            //Integer[] poses = PrepTrajPoses(canvas);
+            PrepTrajPoses(canvas);
             String measStr = "";
             measStr += "Translate X: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX + ", ";
             measStr += "Translate Y: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY + ", ";
@@ -133,5 +102,4 @@ public class DrawView extends View {
             MainActivity.measurementTextView.setText("Please load a trajectory.");
         }
     }
-
 }

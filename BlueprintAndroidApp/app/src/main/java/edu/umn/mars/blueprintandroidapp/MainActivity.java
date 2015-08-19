@@ -53,12 +53,10 @@ import java.util.Properties;
 import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
+    ////Henry
+    static public List<ImagePoint> imagePoints = new ArrayList<>();
+
     //In an Activity
-    static public List<Double> traj_vertices = new ArrayList<Double>();
-    static public List<Integer> traj_vertices_buckets = new ArrayList<Integer>();
-    static public float MaxZ, MinZ;
-    static public int MaxBucket;
-    static final float BucketPrecision = 50;
     static public List<BlueprintAlignmentData> blueprint_data = new ArrayList<BlueprintAlignmentData>();
 
     static int mNumberOfBlueprints;
@@ -76,36 +74,32 @@ public class MainActivity extends ActionBarActivity {
     private static final String JPEGTYPE = ".jpeg";
     private ImageView.ScaleType mScaleType = ImageView.ScaleType.FIT_CENTER;
 
-
     // Views
     static public DrawView drawView;
     static public ImageView blueprintImageView;
-    static public CheckBox lockXCheckBox;
-    static public CheckBox lockYCheckBox;
-    static public CheckBox lockRotationCheckBox;
-    static public CheckBox lockScaleCheckBox;
-    static public CheckBox lockMinZ;
-    static public CheckBox lockMaxZ;
-    static public CheckBox lockZCheckBox;
     static public Button enterScaleButton;
     static public TextView measurementTextView;
     static public TextView currentBlueprintTextView;
-    static public ZHeightDoubleSeekBar maxHeightSeekBar;
-    static public LinearLayout zSelectionGroup;
 
     // Alignment parameters and variables
     private int mActivePointerId = MotionEvent.INVALID_POINTER_ID;
     ScaleGestureDetector scaleDetector;
-    private float mLastRot, mLastTouchX, mLastTouchY;
+    //private float mLastRot, mLastTouchX, mLastTouchY;
+    private float lastX, lastY;
+    private double lastDist, origDist;
+    private boolean onePointer = false;
+    private boolean drawPath = false;
 
 
     public enum LoadType {
         BLUEPRINT, TRAJECTORY, LOAD_ALIGNMENT, SAVE_ALIGNMENT
     }
 
+
     public static Context getAppContext() {
         return MainActivity.context;
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,24 +108,15 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         measurementTextView = (TextView) findViewById(R.id.current_alignment_measurements);
         currentBlueprintTextView = (TextView) findViewById(R.id.current_blueprint_label);
-        lockXCheckBox = (CheckBox) findViewById(R.id.lock_x);
-        lockYCheckBox = (CheckBox) findViewById(R.id.lock_y);
-        lockRotationCheckBox = (CheckBox) findViewById(R.id.lock_rotation);
-        lockScaleCheckBox = (CheckBox) findViewById(R.id.lock_scale);
-        lockZCheckBox = (CheckBox) findViewById(R.id.lock_z_height);
-        lockMinZ = (CheckBox) findViewById(R.id.lock_min_inf);
-        lockMaxZ = (CheckBox) findViewById(R.id.lock_max_inf);
         drawView = (DrawView) findViewById(R.id.draw_view);
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
-        maxHeightSeekBar = (ZHeightDoubleSeekBar) findViewById(R.id.z_height_seek_bar);
-        zSelectionGroup = (LinearLayout) findViewById(R.id.z_selection_group);
-        zSelectionGroup.setVisibility(View.INVISIBLE);
         enterScaleButton = (Button) findViewById(R.id.enter_scale_button);
         enterScaleButton.setVisibility(View.INVISIBLE);
         blueprintImageView.setScaleType(mScaleType);
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
         requestNumberOfBlueprints();
     }
+
 
     void GoToBlueprintAtIdx(int idx) {
         if (idx >= mNumberOfBlueprints) {
@@ -166,17 +151,10 @@ public class MainActivity extends ActionBarActivity {
                     Toast.LENGTH_SHORT).show();
         }
 
-        maxHeightSeekBar.setLowerValue(blueprint_data.get(mCurrentBlueprintIdx).MinZ);
-        maxHeightSeekBar.setUpperValue(blueprint_data.get(mCurrentBlueprintIdx).MaxZ);
-
-        lockMinZ.setChecked(blueprint_data.get(mCurrentBlueprintIdx).LockMinZ);
-        lockMaxZ.setChecked(blueprint_data.get(mCurrentBlueprintIdx).LockMaxZ);
-
         drawView.invalidate();
         drawView.requestLayout();
-        maxHeightSeekBar.invalidate();
-        maxHeightSeekBar.requestLayout();
     }
+
 
     void setBlueprintClasses() {
         blueprint_data.clear();
@@ -184,11 +162,9 @@ public class MainActivity extends ActionBarActivity {
             blueprint_data.add(new BlueprintAlignmentData());
         }
 
-        blueprint_data.get(0).LockMinZ = true;
-        blueprint_data.get(blueprint_data.size()-1).LockMaxZ = true;
-
         GoToBlueprintAtIdx(0);
     }
+
 
     void requestNumberOfBlueprints() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -247,43 +223,10 @@ public class MainActivity extends ActionBarActivity {
         dialog.show();
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
-
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        switch (id) {
-//            case R.id.action_settings:
-//                PrintNotYetImplemented("SelectSettings");
-//                return true;
-//            case R.id.action_load_alignment:
-//                LoadAlignment();
-//                return true;
-//            case R.id.action_save_alignment:
-//                SaveAlignment();
-//                return true;
-//            default:
-//                break;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            if (lockScaleCheckBox.isChecked()) {
-                return true;
-            }
 
             MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale *= detector.getScaleFactor();
             MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale = Math.max(0.1f, MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale);
@@ -295,6 +238,7 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         boolean result = false;
@@ -303,10 +247,16 @@ public class MainActivity extends ActionBarActivity {
 
         switch (num_pointers) {
             case 1:
-                result = handleOnePointer(event);
+                if (drawPath) {
+                    result = handleDrawPath(event);
+                } else {
+                    result = handleOnePointer(event);
+                }
                 break;
             case 2:
-                result = handleTwoPointers(event);
+                if (!drawPath) {
+                    result = handleTwoPointers(event);
+                }
                 break;
             default:
                 result = super.onTouchEvent(event);
@@ -315,10 +265,12 @@ public class MainActivity extends ActionBarActivity {
         return result;
     }
 
+
+    // Two finger touch and drag
     private boolean handleTwoPointers(MotionEvent event) {
         boolean result = false;
 
-        result |= scaleDetector.onTouchEvent(event);
+        onePointer = false;
 
         final int action = MotionEventCompat.getActionMasked(event);
 
@@ -330,53 +282,39 @@ public class MainActivity extends ActionBarActivity {
             }
 
             case MotionEvent.ACTION_POINTER_DOWN: {
-//                final int pointerIndex = MotionEventCompat.getActionIndex(event);
-                final float x0 = MotionEventCompat.getX(event, 0);
-                final float y0 = MotionEventCompat.getY(event, 0);
-                final float x1 = MotionEventCompat.getX(event, 1);
-                final float y1 = MotionEventCompat.getY(event, 1);
-                final float x = (x1 + x0) / 2;
-                final float y = (y1 + y0) / 2;
+                float x0 = MotionEventCompat.getX(event, 0);
+                float y0 = MotionEventCompat.getY(event, 0);
+                float x1 = MotionEventCompat.getX(event, 1);
+                float y1 = MotionEventCompat.getY(event, 1);
+                float xDist = x1 - x0;
+                float yDist = y1 - y0;
 
-                // Remember where we started (for dragging)
-                mLastTouchX = x;
-                mLastTouchY = y;
+                lastDist = Math.sqrt(xDist*xDist + yDist*yDist);
+                origDist = Math.max(lastDist, 500);
+
                 // Save the ID of this pointer (for dragging)
                 mActivePointerId = MotionEventCompat.getPointerId(event, 0);
                 result = true;
                 break;
             }
 
-
             case MotionEvent.ACTION_MOVE: {
-                // Find the index of the active pointer and fetch its position
-//                final int pointerIndex =
-//                        MotionEventCompat.findPointerIndex(event, mActivePointerId);
+                float x0 = MotionEventCompat.getX(event, 0);
+                float y0 = MotionEventCompat.getY(event, 0);
+                float x1 = MotionEventCompat.getX(event, 1);
+                float y1 = MotionEventCompat.getY(event, 1);
+                float xDist = x1 - x0;
+                float yDist = y1 - y0;
 
-                final float x0 = MotionEventCompat.getX(event, 0);
-                final float y0 = MotionEventCompat.getY(event, 0);
-                final float x1 = MotionEventCompat.getX(event, 1);
-                final float y1 = MotionEventCompat.getY(event, 1);
-                final float x = (x1 + x0) / 2;
-                final float y = (y1 + y0) / 2;
+                double curDist = Math.sqrt(xDist*xDist + yDist*yDist);
+                double dDist = curDist - lastDist;
+                dDist /= (origDist/6f);
+                lastDist = curDist;
 
-                // Calculate the distance moved
-                float trajScale = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale;
-                final float dx = (x - mLastTouchX)*blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsX();
-                final float dy = (y - mLastTouchY)*blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsY();
-
-                if (!lockXCheckBox.isChecked()) {
-                    blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX += dx;
-                }
-                if (!lockYCheckBox.isChecked()) {
-                    blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY += dy;
-                }
+                blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot += dDist;
 
                 drawView.invalidate();
 
-                // Remember this touch position for the next move event
-                mLastTouchX = x;
-                mLastTouchY = y;
                 result = true;
 
                 break;
@@ -393,23 +331,12 @@ public class MainActivity extends ActionBarActivity {
                 result = true;
                 break;
             }
-
-            case MotionEvent.ACTION_POINTER_UP: {
-
-                final int pointerIndex = MotionEventCompat.getActionIndex(event);
-                final int pointerId = MotionEventCompat.getPointerId(event, pointerIndex);
-
-                final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
-                mLastRot = MotionEventCompat.getX(event, newPointerIndex);
-                mActivePointerId = MotionEventCompat.getPointerId(event, newPointerIndex);
-
-                result = true;
-                break;
-            }
         }
         return result;
     }
 
+
+    // Single finger touch and drag
     private boolean handleOnePointer(MotionEvent event) {
         boolean result = false;
 
@@ -418,10 +345,11 @@ public class MainActivity extends ActionBarActivity {
         switch (action) {
             case MotionEvent.ACTION_DOWN: {
                 final int pointerIndex = MotionEventCompat.getActionIndex(event);
-                final float x = MotionEventCompat.getX(event, pointerIndex);
 
-                // Remember where we started (for dragging)
-                mLastRot = x;
+                onePointer = true;
+                lastX = MotionEventCompat.getX(event, pointerIndex);
+                lastY = MotionEventCompat.getY(event, pointerIndex);
+
                 // Save the ID of this pointer (for dragging)
                 mActivePointerId = MotionEventCompat.getPointerId(event, 0);
                 result = true;
@@ -435,30 +363,25 @@ public class MainActivity extends ActionBarActivity {
                 if (pointerIndex == MotionEvent.INVALID_POINTER_ID) {
                     return result = true;
                 }
-
-                final float x = MotionEventCompat.getX(event, pointerIndex);
-
-                // Calculate the distance moved
-                final float dx = -(x - mLastRot)/5f;
-
-                if (!lockRotationCheckBox.isChecked()) {
-
-                    blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot += (dx / 2f) * (Math.PI / 180f);
-
-                    if (blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot >= 2 * Math.PI) {
-                        blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot -= 2 * Math.PI;
-                    }
-
-                    if (blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot < 0) {
-                        blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot += 2 * Math.PI;
-                    }
+                if (!onePointer) {
+                    return true;
                 }
+
+                float curX = MotionEventCompat.getX(event, pointerIndex);
+                float curY = MotionEventCompat.getY(event, pointerIndex);
+
+                float dx = curX - lastX;
+                float dy = curY - lastY;
+
+                lastX = curX;
+                lastY = curY;
+
+                blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX += dx;
+                blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY += dy;
 
                 drawView.invalidate();
                 drawView.requestLayout();
 
-                // Remember this touch position for the next move event
-                mLastRot = x;
                 result = true;
 
                 break;
@@ -479,6 +402,11 @@ public class MainActivity extends ActionBarActivity {
         return result;
     }
 
+    private boolean handleDrawPath(MotionEvent event) {
+        return true;
+    }
+
+
     private void PrintNotYetImplemented(CharSequence functionName) {
         Context context = getApplicationContext();
         CharSequence text = functionName + " not yet implemented";
@@ -488,68 +416,42 @@ public class MainActivity extends ActionBarActivity {
         toast.show();
     }
 
-    private void readTrajData() {
-        traj_vertices.clear();
-        traj_vertices_buckets.clear();
 
+    // Read in image locations from text file
+    private void readImageData() {
         try {
             File myFile = new File(mCurrentDir + mChosenFile);
             Scanner scan = new Scanner(myFile);
 
             int count = 0;
             while (scan.hasNextDouble()) {
-                if (count % state_vec_size == 13 || count % state_vec_size == 14 || count % state_vec_size == 15) {
-                    double d = scan.nextDouble();
-                    traj_vertices.add(d);
-                    if (count == 15) {
-                        MaxZ = (float) d;
-                        MinZ = (float) d;
-                    }
-                    if (count % state_vec_size == 15) {
-                        if (MaxZ < d) {
-                            MaxZ = (float) d;
-                        }
-                        if (MinZ > d) {
-                            MinZ = (float) d;
-                        }
-                    }
+                if (count % state_vec_size == 13) {
+                    double xval = scan.nextDouble();
+                    double yval = scan.nextDouble();
+                    count++;
+                    ImagePoint newPoint = new ImagePoint(xval, yval);
+                    imagePoints.add(newPoint);
                 } else {
                     scan.nextDouble();
                 }
                 count++;
             }
-
-            int numberOfBuckets = (int) Math.ceil((MainActivity.MaxZ - MainActivity.MinZ) * BucketPrecision) + 1;
-            for (int i = 0; i < numberOfBuckets; i++) {
-                traj_vertices_buckets.add(0);
-            }
-            MaxBucket = 0;
-            for (int i = 2; i < MainActivity.traj_vertices.size(); i+=3) {
-                int bucket = (int) Math.ceil((traj_vertices.get(i) - MinZ) * BucketPrecision);
-                traj_vertices_buckets.set(bucket, traj_vertices_buckets.get(bucket) + 1);
-                if (MaxBucket < traj_vertices_buckets.get(bucket)) {
-                    MaxBucket = traj_vertices_buckets.get(bucket);
-                }
-            }
-
         } catch (Exception e) {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
         }
     }
 
+
     private void displayTrajData() {
-        if (traj_vertices.isEmpty()) {
+        if (imagePoints.isEmpty()) {
             Log.e(DEBUG_TAG, "No vertices loaded");
             return;
         }
 
-        zSelectionGroup.setVisibility(View.VISIBLE);
         enterScaleButton.setVisibility(View.VISIBLE);
         GoToBlueprintAtIdx(mCurrentBlueprintIdx);
     }
-
-
 
 
     private void readAlignmentData() {
@@ -584,7 +486,6 @@ public class MainActivity extends ActionBarActivity {
                 blueprint_data.get(i).loadFromConfigProperties(prop, i, blueprint_config_idx);
             }
 
-            maxHeightSeekBar.isFirstTouch = false;
             GoToBlueprintAtIdx(0);
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -597,26 +498,8 @@ public class MainActivity extends ActionBarActivity {
                 }
             }
         }
-
-//        try {
-//            File myFile = new File(mCurrentDir + mChosenFile);
-//
-//            FileInputStream is = new FileInputStream(myFile);
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-//
-//            while (!reader.readLine().contains("blueprint")) {
-//                // do nothing
-//            }
-//
-//            String numFloorsLine = reader.readLine();
-//            String[] numberFloorsSplit = numFloorsLine.trim().split("\\s");
-
-
-//        } catch (Exception e) {
-//            Toast.makeText(getBaseContext(), e.getMessage(),
-//                    Toast.LENGTH_SHORT).show();
-//        }
     }
+
 
     private void loadFileList(String baseFolderPath) {
         File mPath = new File(baseFolderPath);
@@ -661,18 +544,22 @@ public class MainActivity extends ActionBarActivity {
         mFileList.add("MOVE UP ONE DIRECTORY LEVEL");
     }
 
+
     private boolean FileIsImage() {
         return mChosenFile.toLowerCase().contains(PNGTYPE) || mChosenFile.toLowerCase().contains(JPGTYPE) || mChosenFile.toLowerCase().contains(JPEGTYPE);
     }
+
 
     private boolean FileIsDir() {
         File sel = new File(mCurrentDir, mChosenFile);
         return sel.isDirectory();
     }
 
+
     private boolean FileIsData() {
         return !FileIsImage() && !FileIsDir();
     }
+
 
     private void CreateNewDirectory() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -722,6 +609,7 @@ public class MainActivity extends ActionBarActivity {
 
         alert.show();
     }
+
 
     boolean doWriteToFile(File file) {
         boolean success = false;
@@ -781,6 +669,7 @@ public class MainActivity extends ActionBarActivity {
         return success;
     }
 
+
     private void SaveCurrentAlignment() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
@@ -838,6 +727,7 @@ public class MainActivity extends ActionBarActivity {
         alert.show();
     }
 
+
     protected Dialog createFileSelectorDialog(String baseFolderPath, LoadType loadType) {
         mCurrentDir = baseFolderPath;
         mLoadType = loadType;
@@ -885,7 +775,7 @@ public class MainActivity extends ActionBarActivity {
                                 GoToBlueprintAtIdx(mCurrentBlueprintIdx);
                             } else if (FileIsData() && mLoadType == LoadType.TRAJECTORY) {
                                 Log.i(DEBUG_TAG, "You have selected a trajectory data file.");
-                                readTrajData();
+                                readImageData();
                                 displayTrajData();
                             } else if (FileIsData() && mLoadType == LoadType.LOAD_ALIGNMENT) {
                                 readAlignmentData();
@@ -933,10 +823,11 @@ public class MainActivity extends ActionBarActivity {
         return dialog;
     }
 
+
     public void EnterScale(View view) {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-        alert.setTitle("Enter Scale (pixels/meter) of Current Blueprint");
+        alert.setTitle("Enter Scale of Current Blueprint: 1 meter = X pixels");
 
         // Set an EditText view to get user input
         final EditText input = new EditText(this);
@@ -948,7 +839,6 @@ public class MainActivity extends ActionBarActivity {
                 try {
                     value = Float.parseFloat(input.getText().toString());
                     blueprint_data.get(mCurrentBlueprintIdx).TrajScale = value;
-                    lockScaleCheckBox.setChecked(true);
                     GoToBlueprintAtIdx(mCurrentBlueprintIdx);
                 } catch (NumberFormatException e) {
                     CharSequence text = "Please enter a floating point number.";
@@ -968,10 +858,12 @@ public class MainActivity extends ActionBarActivity {
         alert.show();
     }
 
+
     public void LoadAlignment(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.LOAD_ALIGNMENT);
         dialog.show();
     }
+
 
     public void NextBlueprint(View view) {
         if (mCurrentBlueprintIdx >= mNumberOfBlueprints-1) {
@@ -982,43 +874,23 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+
     public void PreviousBlueprint(View view) {
             GoToBlueprintAtIdx(mCurrentBlueprintIdx - 1);
     }
 
-    public void SelectTrajectory(View view) {
+
+    public void SelectImages(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.TRAJECTORY);
         dialog.show();
     }
+
 
     public void SelectBlueprint(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.BLUEPRINT);
         dialog.show();
     }
 
-    public void ToggleZSelection (View view) {
-        if (lockZCheckBox.isChecked() || traj_vertices.isEmpty()) {
-            zSelectionGroup.setVisibility(View.INVISIBLE);
-        } else {
-            zSelectionGroup.setVisibility(View.VISIBLE);
-        }
-    }
-
-    public void LockMaxHeight(View view) {
-        blueprint_data.get(mCurrentBlueprintIdx).LockMaxZ = lockMaxZ.isChecked();;
-        maxHeightSeekBar.invalidate();
-        maxHeightSeekBar.requestLayout();
-        drawView.invalidate();
-        drawView.requestLayout();
-    }
-
-    public void LockMinHeight(View view) {
-        blueprint_data.get(mCurrentBlueprintIdx).LockMinZ = lockMinZ.isChecked();;
-        maxHeightSeekBar.invalidate();
-        maxHeightSeekBar.requestLayout();
-        drawView.invalidate();
-        drawView.requestLayout();
-    }
 
     public void ResetAlignmentData() {
         for (int i = 0; i < mNumberOfBlueprints; i++) {
@@ -1027,9 +899,8 @@ public class MainActivity extends ActionBarActivity {
 
         drawView.invalidate();
         drawView.requestLayout();
-        maxHeightSeekBar.invalidate();
-        maxHeightSeekBar.requestLayout();
     }
+
 
     public void ResetAlignment(View view) {
         ResetAlignmentData();
@@ -1042,28 +913,12 @@ public class MainActivity extends ActionBarActivity {
         toast.show();
     }
 
-    public void SelectToggle(View view) {
-        // if you change these, you will likely have to change how the scale is calculated
-        // We assume it fills the parent
-        if (mScaleType == ImageView.ScaleType.FIT_XY) {
-            mScaleType = ImageView.ScaleType.FIT_CENTER;
-        } else {
-            mScaleType = ImageView.ScaleType.FIT_XY;
-        }
-        blueprintImageView.setScaleType(mScaleType);
-
-        blueprintImageView.invalidate();
-        blueprintImageView.requestLayout();
-
-        drawView.invalidate();
-        drawView.requestLayout();
-    }
-
 
     public void ResetBlueprintData() {
         blueprint_data.clear();
         blueprintImageView.setImageResource(android.R.color.transparent);
     }
+
 
     public void ResetAll(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -1073,8 +928,7 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         ResetAlignmentData();
-                        traj_vertices.clear();
-                        traj_vertices_buckets.clear();
+                        imagePoints.clear();
 
                         ResetBlueprintData();
                         requestNumberOfBlueprints();
@@ -1095,5 +949,17 @@ public class MainActivity extends ActionBarActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+
+    public void DrawPath(View view) {
+        drawPath = !drawPath;
+
+        if (drawPath) {
+            enterScaleButton.setVisibility(View.INVISIBLE);
+        } else {
+            enterScaleButton.setVisibility(View.VISIBLE);
+        }
+        return;
     }
 }
