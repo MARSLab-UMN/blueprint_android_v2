@@ -20,12 +20,15 @@ import android.widget.TextView;
 
 
 public class DrawView extends View {
-    Paint paint = new Paint();
+    Paint activePaint = new Paint();
+    Paint passivePaint = new Paint();
     static final String DEBUG_TAG = "DrawView";
 
     private void init() {
-        paint.setColor(Color.BLUE);
-        paint.setStrokeWidth(3f);
+        passivePaint.setColor(Color.BLUE);
+        passivePaint.setStrokeWidth(10f);
+        activePaint.setColor(Color.GREEN);
+        activePaint.setStrokeWidth(10f);
     }
 
     public DrawView(Context context) {
@@ -44,7 +47,7 @@ public class DrawView extends View {
     }
 
 
-    private void PrepTrajPoses(Canvas canvas) {
+    private void drawImages(Canvas canvas, Paint paint) {
 
         float trajRot = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot;
         float shiftX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX;
@@ -82,6 +85,20 @@ public class DrawView extends View {
         }
     }
 
+    private void drawPath(Canvas canvas, Paint paint) {
+        TrajectoryPoint curPoint = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).trajPoint;
+        TrajectoryPoint nextPoint;
+
+        if (curPoint == null) {
+            return;
+        }
+
+        while (curPoint.getNextPoint() != null) {
+            nextPoint = curPoint.getNextPoint();
+            canvas.drawLine(curPoint.getX(), curPoint.getY(), nextPoint.getX(), nextPoint.getY(),  paint);
+            curPoint = nextPoint;
+        }
+    }
 
     @Override
     public void onDraw(Canvas canvas) {
@@ -91,7 +108,14 @@ public class DrawView extends View {
 
         if (MainActivity.imagePoints.size() > 0) {
             //Integer[] poses = PrepTrajPoses(canvas);
-            PrepTrajPoses(canvas);
+            if (MainActivity.drawPath) {
+                drawImages(canvas, passivePaint);
+                drawPath(canvas, activePaint);
+            } else {
+                drawImages(canvas, activePaint);
+                drawPath(canvas, passivePaint);
+            }
+
             String measStr = "";
             measStr += "Translate X: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX + ", ";
             measStr += "Translate Y: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY + ", ";

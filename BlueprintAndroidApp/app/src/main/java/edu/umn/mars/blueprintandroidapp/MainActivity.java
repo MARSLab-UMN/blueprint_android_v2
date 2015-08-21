@@ -29,6 +29,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +48,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -64,6 +66,7 @@ public class MainActivity extends ActionBarActivity {
     private static Context context;
     private ArrayList<String> mFileList = new ArrayList<String>();
     static final int state_vec_size = 16;
+    static final float dist_between_points = 50.0f;
     private String mChosenFile;
     private String mCurrentDir;
     public static int mCurrentBlueprintIdx;
@@ -80,6 +83,7 @@ public class MainActivity extends ActionBarActivity {
     static public Button enterScaleButton;
     static public TextView measurementTextView;
     static public TextView currentBlueprintTextView;
+    static public Button drawPathButton;
 
     // Alignment parameters and variables
     private int mActivePointerId = MotionEvent.INVALID_POINTER_ID;
@@ -88,7 +92,7 @@ public class MainActivity extends ActionBarActivity {
     private float lastX, lastY;
     private double lastDist, origDist;
     private boolean onePointer = false;
-    private boolean drawPath = false;
+    static public boolean drawPath = false;
 
 
     public enum LoadType {
@@ -111,6 +115,7 @@ public class MainActivity extends ActionBarActivity {
         drawView = (DrawView) findViewById(R.id.draw_view);
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
         enterScaleButton = (Button) findViewById(R.id.enter_scale_button);
+        drawPathButton = (Button) findViewById(R.id.draw_path_button);
         enterScaleButton.setVisibility(View.INVISIBLE);
         blueprintImageView.setScaleType(mScaleType);
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
@@ -403,7 +408,94 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private boolean handleDrawPath(MotionEvent event) {
-        return true;
+        boolean result = false;
+        final int action = MotionEventCompat.getActionMasked(event);
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN: {
+                final int pointerIndex = MotionEventCompat.getActionIndex(event);
+
+                if (blueprint_data.get(MainActivity.mCurrentBlueprintIdx).trajPoint == null) {
+                    float curX = MotionEventCompat.getX(event, pointerIndex);
+                    float curY = MotionEventCompat.getY(event, pointerIndex);
+
+                    int[] corners = new int[2];
+                    drawView.getLocationOnScreen(corners);
+
+                    TrajectoryPoint curPoint = new TrajectoryPoint(curX - corners[0], curY - corners[1]);
+                    blueprint_data.get(MainActivity.mCurrentBlueprintIdx).trajPoint = curPoint;
+                    blueprint_data.get(MainActivity.mCurrentBlueprintIdx).curTrajPoint = curPoint;
+                } else {
+                    TrajectoryPoint currentPoint = blueprint_data.get(MainActivity.mCurrentBlueprintIdx).curTrajPoint;
+                    int[] corners = new int[2];
+                    drawView.getLocationOnScreen(corners);
+
+                    float curX = MotionEventCompat.getX(event, pointerIndex);
+                    float curY = MotionEventCompat.getY(event, pointerIndex);
+
+                    float distX = Math.abs(curX - currentPoint.getX());
+                    float distY = Math.abs(curY - currentPoint.getY());
+
+                    if ((distX >= dist_between_points) || (distY >= dist_between_points)) {
+                        TrajectoryPoint curPoint = new TrajectoryPoint(curX - corners[0], curY - corners[1]);
+                        currentPoint.setNextPoint(curPoint);
+                        blueprint_data.get(MainActivity.mCurrentBlueprintIdx).curTrajPoint = curPoint;
+                    }
+                }
+
+                drawView.invalidate();
+                drawView.requestLayout();
+                // Save the ID of this pointer (for dragging)
+                mActivePointerId = MotionEventCompat.getPointerId(event, 0);
+                result = true;
+                break;
+            }
+
+            case MotionEvent.ACTION_MOVE: {
+                // Find the index of the active pointer and fetch its position
+                final int pointerIndex =
+                        MotionEventCompat.findPointerIndex(event, mActivePointerId);
+                if (pointerIndex == MotionEvent.INVALID_POINTER_ID) {
+                    return result = true;
+                }
+
+                TrajectoryPoint currentPoint = blueprint_data.get(MainActivity.mCurrentBlueprintIdx).curTrajPoint;
+                int[] corners = new int[2];
+                drawView.getLocationOnScreen(corners);
+
+                float curX = MotionEventCompat.getX(event, pointerIndex);
+                float curY = MotionEventCompat.getY(event, pointerIndex);
+
+                float distX = Math.abs(curX - currentPoint.getX());
+                float distY = Math.abs(curY - currentPoint.getY());
+
+                if ((distX >= dist_between_points) || (distY >= dist_between_points)) {
+                    TrajectoryPoint curPoint = new TrajectoryPoint(curX - corners[0], curY - corners[1]);
+                    currentPoint.setNextPoint(curPoint);
+                    blueprint_data.get(MainActivity.mCurrentBlueprintIdx).curTrajPoint = curPoint;
+                }
+
+                drawView.invalidate();
+                drawView.requestLayout();
+
+                result = true;
+
+                break;
+            }
+
+            case MotionEvent.ACTION_UP: {
+                mActivePointerId = MotionEvent.INVALID_POINTER_ID;
+                result = true;
+                break;
+            }
+
+            case MotionEvent.ACTION_CANCEL: {
+                mActivePointerId = MotionEvent.INVALID_POINTER_ID;
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
 
@@ -424,13 +516,15 @@ public class MainActivity extends ActionBarActivity {
             Scanner scan = new Scanner(myFile);
 
             int count = 0;
+            int imageID = 0;
             while (scan.hasNextDouble()) {
                 if (count % state_vec_size == 13) {
                     double xval = scan.nextDouble();
                     double yval = scan.nextDouble();
                     count++;
-                    ImagePoint newPoint = new ImagePoint(xval, yval);
+                    ImagePoint newPoint = new ImagePoint(xval, yval, imageID);
                     imagePoints.add(newPoint);
+                    imageID++;
                 } else {
                     scan.nextDouble();
                 }
@@ -957,8 +1051,14 @@ public class MainActivity extends ActionBarActivity {
 
         if (drawPath) {
             enterScaleButton.setVisibility(View.INVISIBLE);
+            drawPathButton.setText("Move Images");
+            drawView.invalidate();
+            drawView.requestLayout();
         } else {
             enterScaleButton.setVisibility(View.VISIBLE);
+            drawPathButton.setText("Draw Path");
+            drawView.invalidate();
+            drawView.requestLayout();
         }
         return;
     }

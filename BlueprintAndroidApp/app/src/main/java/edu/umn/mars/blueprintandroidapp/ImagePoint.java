@@ -7,10 +7,12 @@ public class ImagePoint {
 
     private double x;
     private double y;
+    private int Id;
 
-    public ImagePoint(double x, double y) {
+    public ImagePoint(double x, double y, int id) {
         this.x = x;
         this.y = y;
+        this.Id = id;
     }
 
     public double getX() {
@@ -19,6 +21,10 @@ public class ImagePoint {
 
     public double getY() {
         return this.y;
+    }
+
+    public int getId() {
+        return this.Id;
     }
 
 

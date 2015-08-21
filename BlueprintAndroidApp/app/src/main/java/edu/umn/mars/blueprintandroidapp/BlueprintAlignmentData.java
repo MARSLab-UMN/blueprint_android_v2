@@ -19,7 +19,10 @@ public class BlueprintAlignmentData {
     public float TrajPosX = 0;
     public float TrajPosY = 0;
     public float TrajRot = 0;
-    public float TrajScale = 50;
+    public float TrajScale = 20;
+
+    public TrajectoryPoint trajPoint = null;
+    public TrajectoryPoint curTrajPoint = null;
 
     public String blueprintFileLocation;
     public Bitmap imageBitmap;
