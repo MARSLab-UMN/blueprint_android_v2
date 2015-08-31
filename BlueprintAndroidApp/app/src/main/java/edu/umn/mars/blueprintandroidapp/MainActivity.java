@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -56,7 +57,7 @@ import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
     ////Henry
-    static public List<ImagePoint> imagePoints = new ArrayList<>();
+
 
     //In an Activity
     static public List<BlueprintAlignmentData> blueprint_data = new ArrayList<BlueprintAlignmentData>();
@@ -84,6 +85,8 @@ public class MainActivity extends ActionBarActivity {
     static public TextView measurementTextView;
     static public TextView currentBlueprintTextView;
     static public Button drawPathButton;
+    static public Button loadImagesButton;
+    static public Button mapPathButton;
 
     // Alignment parameters and variables
     private int mActivePointerId = MotionEvent.INVALID_POINTER_ID;
@@ -96,7 +99,7 @@ public class MainActivity extends ActionBarActivity {
 
 
     public enum LoadType {
-        BLUEPRINT, TRAJECTORY, LOAD_ALIGNMENT, SAVE_ALIGNMENT
+        BLUEPRINT, TRAJECTORY
     }
 
 
@@ -110,14 +113,23 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         context = getApplicationContext();
         setContentView(R.layout.activity_main);
+
         measurementTextView = (TextView) findViewById(R.id.current_alignment_measurements);
         currentBlueprintTextView = (TextView) findViewById(R.id.current_blueprint_label);
         drawView = (DrawView) findViewById(R.id.draw_view);
         blueprintImageView = (ImageView) findViewById(R.id.imageview);
         enterScaleButton = (Button) findViewById(R.id.enter_scale_button);
         drawPathButton = (Button) findViewById(R.id.draw_path_button);
+        loadImagesButton = (Button) findViewById(R.id.btn_load_images);
+        mapPathButton = (Button) findViewById(R.id.next_screen_button);
+
         enterScaleButton.setVisibility(View.INVISIBLE);
+        drawPathButton.setVisibility(View.INVISIBLE);
+        loadImagesButton.setVisibility(View.INVISIBLE);
+        mapPathButton.setVisibility(View.INVISIBLE);
+
         blueprintImageView.setScaleType(mScaleType);
+
         scaleDetector = new ScaleGestureDetector(getAppContext(), new ScaleListener());
         requestNumberOfBlueprints();
     }
@@ -136,9 +148,9 @@ public class MainActivity extends ActionBarActivity {
 
         Button next_button = (Button) findViewById(R.id.next_blueprint_button);
         if (mCurrentBlueprintIdx >= mNumberOfBlueprints-1) {
-            next_button.setText("Save Config File");
+            next_button.setEnabled(false);
         } else {
-            next_button.setText("Next Blueprint");
+            next_button.setEnabled(true);
         }
 
         Button previous_button = (Button) findViewById(R.id.back_blueprint_button);
@@ -154,6 +166,26 @@ public class MainActivity extends ActionBarActivity {
         } catch (Exception e) {
             Toast.makeText(getBaseContext(), e.getMessage(),
                     Toast.LENGTH_SHORT).show();
+        }
+
+        BlueprintAlignmentData curBlueprint = blueprint_data.get(mCurrentBlueprintIdx);
+
+        if (curBlueprint.blueprintFileLocation == null) {
+            loadImagesButton.setVisibility(View.INVISIBLE);
+            enterScaleButton.setVisibility(View.INVISIBLE);
+            drawPathButton.setVisibility(View.INVISIBLE);
+            drawPath = false;
+            drawPathButton.setText("Draw Path");
+        } else if (curBlueprint.imagePoints.size() == 0) {
+            loadImagesButton.setVisibility(View.VISIBLE);
+            enterScaleButton.setVisibility(View.INVISIBLE);
+            drawPathButton.setVisibility(View.INVISIBLE);
+            drawPath = false;
+            drawPathButton.setText("Draw Path");
+        } else {
+            loadImagesButton.setVisibility(View.VISIBLE);
+            enterScaleButton.setVisibility(View.VISIBLE);
+            drawPathButton.setVisibility(View.VISIBLE);
         }
 
         drawView.invalidate();
@@ -250,6 +282,11 @@ public class MainActivity extends ActionBarActivity {
 
         int num_pointers = event.getPointerCount();
 
+        if (blueprint_data.get(mCurrentBlueprintIdx).imagePoints.size() == 0) {
+            result = super.onTouchEvent(event);
+            return result;
+        }
+
         switch (num_pointers) {
             case 1:
                 if (drawPath) {
@@ -294,7 +331,7 @@ public class MainActivity extends ActionBarActivity {
                 float xDist = x1 - x0;
                 float yDist = y1 - y0;
 
-                lastDist = Math.sqrt(xDist*xDist + yDist*yDist);
+                lastDist = Math.sqrt(xDist * xDist + yDist * yDist);
                 origDist = Math.max(lastDist, 500);
 
                 // Save the ID of this pointer (for dragging)
@@ -515,8 +552,10 @@ public class MainActivity extends ActionBarActivity {
             File myFile = new File(mCurrentDir + mChosenFile);
             Scanner scan = new Scanner(myFile);
 
+            List<ImagePoint> imagePoints = blueprint_data.get(mCurrentBlueprintIdx).imagePoints;
+
             int count = 0;
-            int imageID = 0;
+            int imageID = 1;
             while (scan.hasNextDouble()) {
                 if (count % state_vec_size == 13) {
                     double xval = scan.nextDouble();
@@ -537,7 +576,9 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    private void displayTrajData() {
+    private void displayImageData() {
+        List<ImagePoint> imagePoints = blueprint_data.get(mCurrentBlueprintIdx).imagePoints;
+
         if (imagePoints.isEmpty()) {
             Log.e(DEBUG_TAG, "No vertices loaded");
             return;
@@ -548,59 +589,9 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    private void readAlignmentData() {
-        Properties prop = new Properties();
-        InputStream input = null;
-
-        try {
-
-            input = new FileInputStream(mCurrentDir + mChosenFile);
-
-            // load a properties file
-            prop.load(input);
-
-            // get the property value and print it out
-
-            int blueprint_config_idx = -1;
-            for (Properties.Entry<Object, Object> entry : prop.entrySet()) {
-                String key = (String) entry.getKey();
-                String value = (String) entry.getValue();
-                if (value.equals("blueprint")) {
-                    String keySplit[] = key.trim().split("_");
-                    blueprint_config_idx = Integer.parseInt(keySplit[keySplit.length-1]);
-                    break;
-                }
-            }
-            int numberOfBlueprints = Integer.parseInt(prop.getProperty("floors_" + blueprint_config_idx));
-            ResetBlueprintData();
-            mNumberOfBlueprints = numberOfBlueprints;
-            setBlueprintClasses();
-
-            for (int i = 0; i < mNumberOfBlueprints; i++) {
-                blueprint_data.get(i).loadFromConfigProperties(prop, i, blueprint_config_idx);
-            }
-
-            GoToBlueprintAtIdx(0);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
 
     private void loadFileList(String baseFolderPath) {
         File mPath = new File(baseFolderPath);
-        if (mLoadType == LoadType.SAVE_ALIGNMENT) {
-            mFileList.add("SAVE IN CURRENT DIRECTORY");
-            mFileList.add("CREATE NEW DIRECTORY");
-        }
 
         try {
             mPath.mkdirs();
@@ -628,10 +619,8 @@ public class MainActivity extends ActionBarActivity {
             };
             List<String> dirList = Arrays.asList(mPath.list(dirFilter));
             mFileList.addAll(dirList);
-            if (mLoadType != LoadType.SAVE_ALIGNMENT) {
-                List<String> fileList = Arrays.asList(mPath.list(fileFilter));
-                mFileList.addAll(fileList);
-            }
+            List<String> fileList = Arrays.asList(mPath.list(fileFilter));
+            mFileList.addAll(fileList);
         } else {
             mFileList.clear();
         }
@@ -704,124 +693,6 @@ public class MainActivity extends ActionBarActivity {
         alert.show();
     }
 
-
-    boolean doWriteToFile(File file) {
-        boolean success = false;
-        try {
-            success = file.createNewFile();
-            FileOutputStream fOut = new FileOutputStream(file, false);
-            OutputStreamWriter myOutWriter =
-                    new OutputStreamWriter(fOut);
-            String opening = "num_renderables = 5" + System.getProperty("line.separator") +
-                    "renderable_0 = image" +System.getProperty("line.separator") +
-                    "size_0 = [1920, 1080]" +System.getProperty("line.separator") +
-                    "position_0 = [0,0]" +System.getProperty("line.separator") +
-                    "page_0 = 0" +System.getProperty("line.separator") +
-                     System.getProperty("line.separator") +
-                    "renderable_1 = points" +System.getProperty("line.separator") +
-                    "size_1 = [1920, 1080]" +System.getProperty("line.separator") +
-                    "position_1 = [0,0]" +System.getProperty("line.separator") +
-                    "page_1 = 0" +System.getProperty("line.separator") +
-                     System.getProperty("line.separator") +
-                    "renderable_2 = trajectory" +System.getProperty("line.separator") +
-                    "size_2 = [1920, 1080]" +System.getProperty("line.separator") +
-                    "position_2 = [0,0]" +System.getProperty("line.separator") +
-                    "page_2 = 0" +System.getProperty("line.separator") +
-                     System.getProperty("line.separator") +
-                     System.getProperty("line.separator") +
-                     System.getProperty("line.separator");
-
-            int renderableIndx = 3;
-            String blueprint_portion = "renderable_"+renderableIndx+" = blueprint" + System.getProperty("line.separator");
-            blueprint_portion += "floors_"+renderableIndx+" = "+ mNumberOfBlueprints+ System.getProperty("line.separator");
-            for (int i = 0; i < mNumberOfBlueprints; i++) {
-                blueprint_portion += blueprint_data.get(i).createConfigFileString(i, renderableIndx);
-            }
-
-            String closing_portion = "size_3 = [1920, 1080]" +System.getProperty("line.separator") +
-                    "position_3 = [0, 0]" +System.getProperty("line.separator") +
-                    "page_3 = 1" +System.getProperty("line.separator") +
-                    System.getProperty("line.separator") +
-                    System.getProperty("line.separator") +
-                    "renderable_4 = image" + System.getProperty("line.separator") +
-                    "size_4 = [160,120]" + System.getProperty("line.separator") +
-                    "position_4 = [640, 480]" + System.getProperty("line.separator") +
-                    "page_4 = 1";
-
-            myOutWriter.append(opening);
-            myOutWriter.append(blueprint_portion);
-            myOutWriter.append(closing_portion);
-
-                    myOutWriter.close();
-            fOut.close();
-
-        } catch (Exception e) {
-            Toast.makeText(getBaseContext(), e.getMessage(),
-                    Toast.LENGTH_SHORT).show();
-        }
-
-        return success;
-    }
-
-
-    private void SaveCurrentAlignment() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-
-        alert.setTitle("Currently saving in: " + mCurrentDir.replace(Environment.getExternalStorageDirectory().toString(), "/sdcard"));
-
-        // Set an EditText view to get user input
-        final EditText input = new EditText(this);
-        input.setText(".txt");
-
-        alert.setView(input);
-
-        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                String value = input.getText().toString();
-                if (value.isEmpty() || value.contains(" ")) {
-                    CharSequence text = "Please enter a file name without any spaces.";
-
-                    Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
-                    toast.show();
-                    SaveCurrentAlignment();
-                } else {
-                    String newFile = mCurrentDir + value;
-
-                    File file = new File(newFile);
-                    boolean success = true;
-                    if (file.exists()) {
-                        String message = "File '" + newFile + "' already exists. Please choose another name.";
-                        Log.e(DEBUG_TAG, message);
-                        Toast.makeText(getBaseContext(), message,
-                                Toast.LENGTH_SHORT).show();
-                        SaveCurrentAlignment();
-                        return;
-
-                    } else {
-                        success = doWriteToFile(file);
-                    }
-                    if (success) {
-                        Log.i(DEBUG_TAG, "Created alignment file: " + newFile);
-                        Toast.makeText(getBaseContext(), "Created alignment file: " + newFile,
-                                Toast.LENGTH_SHORT).show();
-                    } else {
-                        // Do something else on failure
-                        Log.e(DEBUG_TAG, "Unable to create new alignment file: " + newFile);
-                    }
-                }
-            }
-        });
-
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // Canceled.
-            }
-        });
-
-        alert.show();
-    }
-
-
     protected Dialog createFileSelectorDialog(String baseFolderPath, LoadType loadType) {
         mCurrentDir = baseFolderPath;
         mLoadType = loadType;
@@ -870,15 +741,7 @@ public class MainActivity extends ActionBarActivity {
                             } else if (FileIsData() && mLoadType == LoadType.TRAJECTORY) {
                                 Log.i(DEBUG_TAG, "You have selected a trajectory data file.");
                                 readImageData();
-                                displayTrajData();
-                            } else if (FileIsData() && mLoadType == LoadType.LOAD_ALIGNMENT) {
-                                readAlignmentData();
-                            } else if (mLoadType == LoadType.SAVE_ALIGNMENT && which == 0) {
-                                // selected to save the file in this directory
-                                SaveCurrentAlignment();
-                            } else if (mLoadType == LoadType.SAVE_ALIGNMENT && which == 1) {
-                                // selected to create new directory
-                                CreateNewDirectory();
+                                displayImageData();
                             } else if (FileIsDir()) {
                                 Log.i(DEBUG_TAG, "Selected a directory");
                                 dialog.dismiss();
@@ -904,12 +767,6 @@ public class MainActivity extends ActionBarActivity {
             case TRAJECTORY:
                 dialog.setTitle("Select a trajectory data file");
                 break;
-            case LOAD_ALIGNMENT:
-                dialog.setTitle("Select an alignment data file");
-                break;
-            case SAVE_ALIGNMENT:
-                dialog.setTitle("Select location to save alignment file");
-                break;
             default:
                 dialog.setTitle("Command not implemented");
                 break;
@@ -921,7 +778,7 @@ public class MainActivity extends ActionBarActivity {
     public void EnterScale(View view) {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-        alert.setTitle("Enter Scale of Current Blueprint: 1 meter = X pixels");
+        alert.setTitle("Enter Scale of Current Blueprint: 1 foot = X pixels");
 
         // Set an EditText view to get user input
         final EditText input = new EditText(this);
@@ -950,22 +807,13 @@ public class MainActivity extends ActionBarActivity {
         });
 
         alert.show();
-    }
 
-
-    public void LoadAlignment(View view) {
-        Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.LOAD_ALIGNMENT);
-        dialog.show();
+        drawPathButton.setVisibility(View.VISIBLE);
     }
 
 
     public void NextBlueprint(View view) {
-        if (mCurrentBlueprintIdx >= mNumberOfBlueprints-1) {
-            Dialog fileSelectDialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.SAVE_ALIGNMENT);
-            fileSelectDialog.show();
-        } else {
-            GoToBlueprintAtIdx(mCurrentBlueprintIdx+1);
-        }
+        GoToBlueprintAtIdx(mCurrentBlueprintIdx + 1);
     }
 
 
@@ -977,12 +825,14 @@ public class MainActivity extends ActionBarActivity {
     public void SelectImages(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.TRAJECTORY);
         dialog.show();
+        enterScaleButton.setVisibility(View.VISIBLE);
     }
 
 
     public void SelectBlueprint(View view) {
         Dialog dialog = createFileSelectorDialog(Environment.getExternalStorageDirectory() + "/", LoadType.BLUEPRINT);
         dialog.show();
+        loadImagesButton.setVisibility(View.VISIBLE);
     }
 
 
@@ -1007,6 +857,14 @@ public class MainActivity extends ActionBarActivity {
         toast.show();
     }
 
+    //clear drawn path for current blueprint
+    public void ClearPath(View view) {
+        blueprint_data.get(mCurrentBlueprintIdx).trajPoint = null;
+        blueprint_data.get(mCurrentBlueprintIdx).curTrajPoint = null;
+        drawView.invalidate();
+        drawView.requestLayout();
+    }
+
 
     public void ResetBlueprintData() {
         blueprint_data.clear();
@@ -1022,7 +880,16 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         ResetAlignmentData();
-                        imagePoints.clear();
+
+                        blueprint_data.get(mCurrentBlueprintIdx).imagePoints.clear();
+                        drawPath = false;
+                        enterScaleButton.setVisibility(View.INVISIBLE);
+                        loadImagesButton.setVisibility(View.INVISIBLE);
+                        drawPathButton.setVisibility(View.INVISIBLE);
+                        mapPathButton.setVisibility(View.INVISIBLE);
+                        drawPathButton.setText("Draw Path");
+                        drawView.invalidate();
+                        drawView.requestLayout();
 
                         ResetBlueprintData();
                         requestNumberOfBlueprints();
@@ -1048,18 +915,27 @@ public class MainActivity extends ActionBarActivity {
 
     public void DrawPath(View view) {
         drawPath = !drawPath;
+        mapPathButton.setVisibility(View.VISIBLE);
 
         if (drawPath) {
             enterScaleButton.setVisibility(View.INVISIBLE);
+            loadImagesButton.setVisibility(View.INVISIBLE);
             drawPathButton.setText("Move Images");
             drawView.invalidate();
             drawView.requestLayout();
         } else {
             enterScaleButton.setVisibility(View.VISIBLE);
+            loadImagesButton.setVisibility(View.VISIBLE);
             drawPathButton.setText("Draw Path");
             drawView.invalidate();
             drawView.requestLayout();
         }
         return;
+    }
+
+
+    public void GoToNextScreen(View view) {
+        Intent i = new Intent(getApplicationContext(), PathStackView.class);
+        startActivity(i);
     }
 }

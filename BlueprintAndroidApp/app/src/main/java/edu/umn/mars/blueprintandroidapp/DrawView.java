@@ -18,6 +18,8 @@ import android.view.View;
 import android.widget.CalendarView;
 import android.widget.TextView;
 
+import java.util.List;
+
 
 public class DrawView extends View {
     Paint activePaint = new Paint();
@@ -48,7 +50,6 @@ public class DrawView extends View {
 
 
     private void drawImages(Canvas canvas, Paint paint) {
-
         float trajRot = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajRot;
         float shiftX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosX;
         float shiftY = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajPosY;
@@ -61,7 +62,9 @@ public class DrawView extends View {
         float blueprintToIVPixelScaleX = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsX();
         float blueprintToIVPixelScaleY = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).getBlueprintToImageViewPixelsY();
 
-        for (ImagePoint curPoint : MainActivity.imagePoints) {
+        List<ImagePoint> imagePoints = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).imagePoints;
+
+        for (ImagePoint curPoint : imagePoints) {
             Double curX = curPoint.getX();
             Double curY = curPoint.getY();
 
@@ -106,8 +109,14 @@ public class DrawView extends View {
             return;
         }
 
-        if (MainActivity.imagePoints.size() > 0) {
-            //Integer[] poses = PrepTrajPoses(canvas);
+        if (MainActivity.blueprint_data.size() == 0) {
+            MainActivity.measurementTextView.setText("Please load a blueprint");
+            return;
+        }
+
+        List<ImagePoint> imagePoints = MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).imagePoints;
+
+        if (imagePoints.size() > 0) {
             if (MainActivity.drawPath) {
                 drawImages(canvas, passivePaint);
                 drawPath(canvas, activePaint);
@@ -123,7 +132,7 @@ public class DrawView extends View {
             measStr += "Scale: " + MainActivity.blueprint_data.get(MainActivity.mCurrentBlueprintIdx).TrajScale + "";
             MainActivity.measurementTextView.setText(measStr);
         } else {
-            MainActivity.measurementTextView.setText("Please load a trajectory.");
+            MainActivity.measurementTextView.setText("Please load blueprint and image data");
         }
     }
 }
