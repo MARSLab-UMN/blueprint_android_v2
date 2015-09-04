@@ -10,6 +10,11 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+
+        ndk {
+            moduleName "DijkstraMain"
+            stl "stlport_static" //needed for import statements (iostream, etc.)
+        }
     }
     buildTypes {
         release {

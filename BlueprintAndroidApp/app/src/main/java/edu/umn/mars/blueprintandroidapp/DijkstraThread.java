@@ -11,9 +11,33 @@ import java.util.List;
 public class DijkstraThread extends Thread {
     private static List<BlueprintAlignmentData> blueprints;
     private List<Integer> waypoints = new LinkedList<>();
+    private String paramDataPath;
+    private int paramNumImgs;
+    private int paramImgSubsamp;
+    private int paramStartStairs;
+    private int paramStartRot;
+
+    //jni stuff
+    public static native String stringFromJNI();
+
+    static {
+        System.loadLibrary("DijkstraMain");
+    }
 
     //constructor
-    public DijkstraThread(List<BlueprintAlignmentData> blueprints) {
+    public DijkstraThread(String paramDataPath,
+                          int paramNumImgs,
+                          int paramImgSubsamp,
+                          int paramStartStairs,
+                          int paramStartRot,
+                          List<BlueprintAlignmentData> blueprints) {
+
+        Log.i("JNI", stringFromJNI());
+        this.paramDataPath = paramDataPath;
+        this.paramNumImgs = paramNumImgs;
+        this.paramImgSubsamp = paramImgSubsamp;
+        this.paramStartStairs = paramStartStairs;
+        this.paramStartRot = paramStartRot;
         this.blueprints = blueprints;
     }
 

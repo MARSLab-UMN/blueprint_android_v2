@@ -11,20 +11,20 @@
         android:layout_height="wrap_content"
         android:text="@string/map_path"
         android:id="@+id/map_path_button"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:onClick="MapPath"/>
+        android:onClick="MapPath"
+        android:layout_below="@+id/load_parameters_button"
+        android:layout_alignLeft="@+id/previous_screen_button"
+        android:layout_alignStart="@+id/previous_screen_button" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/draw_path"
         android:id="@+id/previous_screen_button"
+        android:onClick="GoToPreviousScreen"
         android:layout_below="@+id/map_path_button"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:onClick="GoToPreviousScreen"/>
+        android:layout_alignParentStart="true" />
 
     <StackView
         android:layout_width="wrap_content"
@@ -32,4 +32,14 @@
         android:id="@+id/stack_path_images"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/load_parameters"
+        android:id="@+id/load_parameters_button"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:onClick="LoadParameterFile" />
 </RelativeLayout>
